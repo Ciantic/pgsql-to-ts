@@ -301,7 +301,7 @@ function generateTypeScriptEnums(enums: EnumDef[], options: GenOpts = {}): strin
     return result;
 }
 
-function generateTypeScriptColumnType(
+function generateKyselyColumnType(
     { column, enums }: { column: Column; enums: EnumDef[] },
     options: GenOpts = {}
 ): string {
@@ -354,10 +354,10 @@ function generateTypeScriptTables(
     for (const table of tables) {
         result += `export interface ${renameTables(table.name)} {\n`;
         for (const column of table.columns) {
-            const typeName = generateTypeScriptColumnType({ column, enums }, options);
+            const typeName = generateKyselyColumnType({ column, enums }, options);
             result += `${indent}${renameColumns(column.name)}: ${typeName};\n`;
         }
-        result += "}\n\n";
+        result += "}\n";
     }
     return result;
 }
@@ -370,6 +370,12 @@ function generateKyselyDatabase(result: SqlParseResult, options: GenOpts = {}): 
 
     for (const table of result.tables) {
         ret += `${indent}${table.name}: ${renameTables(table.name)},\n`;
+        // ret += `${indent}${table.name}: {\n`;
+        // for (const column of table.columns) {
+        //     const typeName = generateKyselyColumnType({ column, enums: result.enums }, options);
+        //     ret += `${indent}${indent}${renameColumns(column.name)}: ${typeName};\n`;
+        // }
+        // ret += `${indent}},\n`;
     }
     ret += "}";
     return ret;
@@ -378,8 +384,9 @@ function generateKyselyDatabase(result: SqlParseResult, options: GenOpts = {}): 
 export function generateTypeScript(result: SqlParseResult, options: GenOpts = {}): string {
     const typeMap = PGTYPE_TO_TYPESCRIPT;
     const prefix = `import type { ColumnType } from "kysely";\n\n`;
-    let tsEnums = generateTypeScriptEnums(result.enums, options);
-    let tsTables = generateTypeScriptTables(result, options);
-    let tsDatabase = generateKyselyDatabase(result, options);
-    return `${prefix}${tsEnums}\n${tsTables}\n${tsDatabase}`;
+    const items = [] as string[];
+    items.push(generateTypeScriptEnums(result.enums, options));
+    items.push(generateTypeScriptTables(result, options));
+    items.push(generateKyselyDatabase(result, options));
+    return `${prefix}${items.join("\n")}\n`;
 }

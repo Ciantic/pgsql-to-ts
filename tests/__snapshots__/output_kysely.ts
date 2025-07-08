@@ -5,7 +5,6 @@ export type MyEnumExample = "good" | "bad" | "ugly" | "dont know";
 export interface SpecialKey {
     testPk: number;
 }
-
 export interface VariousTypes {
     bigserial: ColumnType<bigint, bigint | undefined, bigint>;
     serial: ColumnType<number | null, number | null | undefined, number | null>;
@@ -39,13 +38,11 @@ export interface VariousTypes {
     testNotNull: string;
     testNotNullArray: string[];
 }
-
 export interface TestForeignkeys {
     testPk: string;
     testFkToVariousTypes: bigint | null;
     testFkToSelf: string | null;
 }
-
 
 export type Database = {
   special_key: SpecialKey,

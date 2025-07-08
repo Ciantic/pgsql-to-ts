@@ -3,6 +3,7 @@
     "module": "lib.ts",
     "type": "module",
     "devDependencies": {
+        "@electric-sql/pglite": "^0.3.4",
         "@pgsql/types": "^17.6.1",
         "@types/node": "24.0.10",
         "kysely": "^0.28.2",

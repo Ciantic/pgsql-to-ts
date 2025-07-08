@@ -1,6 +1,7 @@
 {
   "version": "5",
   "specifiers": {
+    "npm:@electric-sql/pglite@~0.3.4": "0.3.4",
     "npm:@pgsql/types@^17.6.1": "17.6.1",
     "npm:@types/node@24.0.10": "24.0.10",
     "npm:kysely@~0.28.2": "0.28.2",
@@ -8,6 +9,9 @@
     "npm:vitest@^3.2.4": "3.2.4_@types+node@24.0.10_vite@7.0.2__@types+node@24.0.10__picomatch@4.0.2"
   },
   "npm": {
+    "@electric-sql/pglite@0.3.4": {
+      "integrity": "sha512-h5hoL2GuxcWN8Q3+jtesIRem14iIvAZVEsTeUF6eO9RiUb6ar73QVIEW9t+Ud58iXAcAE2dFMtWqw3W2Oo4LDw=="
+    },
     "@esbuild/aix-ppc64@0.25.5": {
       "integrity": "sha512-9o3TMmpmftaCMepOdA5k/yDw8SfInyzWWTjYTFCX3kPSDJMROQTb8jg+h9Cnwnmm1vOzvxN7gIfB5V2ewpjtGA==",
       "os": ["aix"],
@@ -611,6 +615,7 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
+        "npm:@electric-sql/pglite@~0.3.4",
         "npm:@pgsql/types@^17.6.1",
         "npm:@types/node@24.0.10",
         "npm:kysely@~0.28.2",
