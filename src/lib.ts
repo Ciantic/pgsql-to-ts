@@ -193,8 +193,6 @@ async function parseTable({ tableElts, relation }: CreateStmt): Promise<Table> {
     // Iterate columns
     for (const node of tableElts || []) {
         if ("ColumnDef" in node) {
-            console.log("Parsing column:", node.ColumnDef);
-            console.dir(node.ColumnDef, { depth: 999 });
             table.columns.push(await parseColumn(node.ColumnDef));
         }
     }
@@ -267,7 +265,7 @@ export const PGTYPE_TO_TYPESCRIPT = {
     int8: "bigint",
     json: "any",
     jsonb: "any",
-    numeric: "number",
+    numeric: "string",
     serial: "number",
     text: "string",
     time: "string",
@@ -318,16 +316,15 @@ function generateKyselyColumnType(
     } else {
         throw new Error(`Unknown type: ${column.type}`);
     }
-
-    if (!column.notnull) {
-        typeName += " | null";
-    }
-
     if (column.array) {
         if (typeName.search(" ") > 0) {
             typeName = `(${typeName})`;
         }
         typeName = typeName + "[]";
+    }
+
+    if (!column.notnull) {
+        typeName += " | null";
     }
 
     if (columnType === "serial" || columnType === "bigserial") {
@@ -369,13 +366,13 @@ function generateKyselyDatabase(result: SqlParseResult, options: GenOpts = {}): 
     let ret = `export type Database = {\n`;
 
     for (const table of result.tables) {
-        ret += `${indent}${table.name}: ${renameTables(table.name)},\n`;
-        // ret += `${indent}${table.name}: {\n`;
-        // for (const column of table.columns) {
-        //     const typeName = generateKyselyColumnType({ column, enums: result.enums }, options);
-        //     ret += `${indent}${indent}${renameColumns(column.name)}: ${typeName};\n`;
-        // }
-        // ret += `${indent}},\n`;
+        // ret += `${indent}${table.name}: ${renameTables(table.name)},\n`;
+        ret += `${indent}${table.name}: {\n`;
+        for (const column of table.columns) {
+            const typeName = generateKyselyColumnType({ column, enums: result.enums }, options);
+            ret += `${indent}${indent}${renameColumns(column.name)}: ${typeName};\n`;
+        }
+        ret += `${indent}},\n`;
     }
     ret += "}";
     return ret;
@@ -386,7 +383,7 @@ export function generateTypeScript(result: SqlParseResult, options: GenOpts = {}
     const prefix = `import type { ColumnType } from "kysely";\n\n`;
     const items = [] as string[];
     items.push(generateTypeScriptEnums(result.enums, options));
-    items.push(generateTypeScriptTables(result, options));
+    // items.push(generateTypeScriptTables(result, options));
     items.push(generateKyselyDatabase(result, options));
     return `${prefix}${items.join("\n")}\n`;
 }

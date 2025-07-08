@@ -44,7 +44,7 @@
         },
         {
           "array": false,
-          "name": "test_int32",
+          "name": "test_integer",
           "notnull": false,
           "primarykey": false,
           "type": "int4",
@@ -52,7 +52,7 @@
         },
         {
           "array": false,
-          "name": "test_int64",
+          "name": "test_bigint",
           "notnull": false,
           "primarykey": false,
           "type": "int8",
@@ -60,7 +60,7 @@
         },
         {
           "array": false,
-          "name": "test_bigint",
+          "name": "test_numeric",
           "notnull": false,
           "primarykey": false,
           "type": "numeric",
@@ -68,7 +68,7 @@
         },
         {
           "array": false,
-          "name": "test_float32",
+          "name": "test_float4",
           "notnull": false,
           "primarykey": false,
           "type": "float4",
@@ -76,7 +76,7 @@
         },
         {
           "array": false,
-          "name": "test_float64",
+          "name": "test_float8",
           "notnull": false,
           "primarykey": false,
           "type": "float8",
@@ -100,7 +100,7 @@
         },
         {
           "array": false,
-          "name": "test_string",
+          "name": "test_text",
           "notnull": false,
           "primarykey": false,
           "type": "text",
@@ -124,7 +124,7 @@
         },
         {
           "array": false,
-          "name": "test_datetime",
+          "name": "test_timestamptz",
           "notnull": false,
           "primarykey": false,
           "type": "timestamptz",
@@ -132,7 +132,7 @@
         },
         {
           "array": false,
-          "name": "test_datetime2",
+          "name": "test_timestamp",
           "notnull": false,
           "primarykey": false,
           "type": "timestamp",
@@ -140,7 +140,7 @@
         },
         {
           "array": false,
-          "name": "test_datepart",
+          "name": "test_date",
           "notnull": false,
           "primarykey": false,
           "type": "date",
@@ -148,7 +148,7 @@
         },
         {
           "array": false,
-          "name": "test_timepart",
+          "name": "test_time",
           "notnull": false,
           "primarykey": false,
           "type": "time",
@@ -180,7 +180,7 @@
         },
         {
           "array": true,
-          "name": "test_array",
+          "name": "test_array_text",
           "notnull": false,
           "primarykey": false,
           "type": "text",
@@ -188,7 +188,7 @@
         },
         {
           "array": true,
-          "name": "text_array_ints",
+          "name": "text_array_integer",
           "notnull": false,
           "primarykey": false,
           "type": "int4",
