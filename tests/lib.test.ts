@@ -24,7 +24,6 @@ function snakeCaseToPascalCase(str: string): string {
 
 test("parseSql parses the Create table statements", async () => {
     const result = await parseSql(await schemaSql);
-    // await fs.writeFile("lib.test.result.json", JSON.stringify(result, null, 4));
     await expect(result).toMatchFileSnapshot(__dirname + "/__snapshots__/output_parsed.jsonc");
 });
 
@@ -36,7 +35,4 @@ test("generateTypeScriptInterfaces generates TypeScript interfaces", async () =>
         renameTables: snakeCaseToPascalCase,
     });
     await expect(result).toMatchFileSnapshot(__dirname + "/__snapshots__/output_kysely.ts");
-
-    // await fs.writeFile("lib.test.interfaces.ts", result);
-    // expect(result).toMatchSnapshot();
 });
