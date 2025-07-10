@@ -1,6 +1,12 @@
 import { deparse, parse } from "pgsql-parser";
 import type { ColumnDef, CreateEnumStmt, CreateStmt, Node, ParseResult } from "@pgsql/types";
 
+const HEADER = [
+    `// This file is generated from SQL schema file by sql-to-ts.`,
+    `// Do not edit manually.`,
+    ``,
+];
+
 // https://doxygen.postgresql.org/parsenodes_8h.html#aa2da3f289480b73dbcaccf0404657c65
 export type FKCONSTR_ACTION =
     | "c" // FKCONSTR_ACTION_CASCADE
@@ -226,6 +232,9 @@ function parseEnum({ typeName, vals }: CreateEnumStmt): { enumName: string; valu
     };
 }
 
+/**
+ * Parse given SQL to objects representing tables and enums.
+ */
 export async function parseSql(str: string): Promise<SqlParseResult> {
     const enums: EnumDef[] = [];
     const tables: Table[] = [];
@@ -289,6 +298,11 @@ type GenOpts = {
 
 const identityf = <T>(v: T): T => v;
 
+/**
+ * Generate TypeScript enums from the parsed SQL enums.
+ *
+ * For instance, `export type MyEnum = "good" | "bad" | "ugly" | "dont know";`
+ */
 function generateTypeScriptEnums(enums: EnumDef[], options: GenOpts = {}): string {
     let result = "";
     const renameEnums = options.renameEnums ?? identityf;
@@ -299,7 +313,36 @@ function generateTypeScriptEnums(enums: EnumDef[], options: GenOpts = {}): strin
     return result;
 }
 
+/**
+ * Generate Kysely column type for a given column.
+ *
+ * For instance `string` or `ColumnType<string, string | undefined, string>`.
+ */
 function generateKyselyColumnType(
+    { column, enums }: { column: Column; enums: EnumDef[] },
+    options: GenOpts = {}
+): string {
+    const columnType = column.type as keyof typeof PGTYPE_TO_TYPESCRIPT;
+    let typeName = generateTypescriptColumnType({ column, enums }, options);
+
+    if (columnType === "serial" || columnType === "bigserial") {
+        typeName = `ColumnType<${typeName}, ${typeName} | undefined, ${typeName}>`;
+    } else if (column.generated_when === "always") {
+        typeName = `ColumnType<${typeName}, never, never>`;
+    } else if (column.generated_when === "by default") {
+        typeName = `ColumnType<${typeName}, ${typeName} | undefined, ${typeName}>`;
+    } else if (column.default) {
+        typeName = `ColumnType<${typeName}, ${typeName} | undefined, ${typeName}>`;
+    }
+    return typeName;
+}
+
+/**
+ * Generate TypeScript type for a column based on its PostgreSQL type.
+ *
+ * For instance `string` or `string | null`.
+ */
+function generateTypescriptColumnType(
     { column, enums }: { column: Column; enums: EnumDef[] },
     options: GenOpts = {}
 ): string {
@@ -327,18 +370,12 @@ function generateKyselyColumnType(
         typeName += " | null";
     }
 
-    if (columnType === "serial" || columnType === "bigserial") {
-        typeName = `ColumnType<${typeName}, ${typeName} | undefined, ${typeName}>`;
-    } else if (column.generated_when === "always") {
-        typeName = `ColumnType<${typeName}, never, never>`;
-    } else if (column.generated_when === "by default") {
-        typeName = `ColumnType<${typeName}, ${typeName} | undefined, ${typeName}>`;
-    } else if (column.default) {
-        typeName = `ColumnType<${typeName}, ${typeName} | undefined, ${typeName}>`;
-    }
     return typeName;
 }
 
+/**
+ * Generate TypeScript interfaces for the tables in the database.
+ */
 function generateTypeScriptTables(
     { tables, enums }: SqlParseResult,
     options: GenOpts = {}
@@ -351,39 +388,96 @@ function generateTypeScriptTables(
     for (const table of tables) {
         result += `export interface ${renameTables(table.name)} {\n`;
         for (const column of table.columns) {
-            const typeName = generateKyselyColumnType({ column, enums }, options);
+            const typeName = generateTypescriptColumnType({ column, enums }, options);
             result += `${indent}${renameColumns(column.name)}: ${typeName};\n`;
         }
-        result += "}\n";
+        result += "}\n\n";
     }
     return result;
 }
 
-function generateKyselyDatabase(result: SqlParseResult, options: GenOpts = {}): string {
+/**
+ * Generate Kysely database schema from the parsed SQL result.
+ *
+ * For instance, it generates a TypeScript type that looks like:
+ * ```typescript
+ * export type Database = {
+ *   special_key: {
+ *     testPk: number;
+ *   },
+ *   various_types: {
+ *     bigserial: ColumnType<bigint, bigint | undefined, bigint>;
+ *     serial: ColumnType<number | null, number | null | undefined, number | null>;
+ *     testInteger: number | null;
+ *   },
+ * }
+ * ```
+ */
+export function generateKyselyDatabase(result: SqlParseResult, options: GenOpts = {}): string {
     const indent = options.indent ?? "  ";
-    const renameTables = options.renameTables ?? identityf;
     const renameColumns = options.renameColumns ?? identityf;
-    let ret = `export type Database = {\n`;
+    const items: string[] = [
+        `// This file is generated from SQL schema file by sql-to-ts.`,
+        `// Do not edit manually.`,
+        ``,
+    ];
+    items.push(`import type { ColumnType } from "kysely";\n`);
+    items.push(generateTypeScriptEnums(result.enums, options));
+    items.push(`export type Database = {`);
 
     for (const table of result.tables) {
         // ret += `${indent}${table.name}: ${renameTables(table.name)},\n`;
-        ret += `${indent}${table.name}: {\n`;
+        items.push(`${indent}${table.name}: {`);
         for (const column of table.columns) {
             const typeName = generateKyselyColumnType({ column, enums: result.enums }, options);
-            ret += `${indent}${indent}${renameColumns(column.name)}: ${typeName};\n`;
+            items.push(`${indent}${indent}${renameColumns(column.name)}: ${typeName};`);
         }
-        ret += `${indent}},\n`;
+        items.push(`${indent}},`);
     }
-    ret += "}";
-    return ret;
+    items.push("}");
+    items.push(``);
+    return items.join("\n");
 }
 
+/**
+ * Generate TypeScript interfaces for the tables in the database.
+ *
+ * For instance, it generates a TypeScript interface that looks like:
+ * ```typescript
+ * export interface SpecialKey {
+ *   testPk: number;
+ * }
+ *
+ * export interface VariousTypes {
+ *   bigserial: bigint;
+ *   serial: number | null;
+ *   testInteger: number | null;
+ * }
+ * ```
+ */
 export function generateTypeScript(result: SqlParseResult, options: GenOpts = {}): string {
-    const typeMap = PGTYPE_TO_TYPESCRIPT;
-    const prefix = `import type { ColumnType } from "kysely";\n\n`;
-    const items = [] as string[];
+    const items = [...HEADER] as string[];
     items.push(generateTypeScriptEnums(result.enums, options));
-    // items.push(generateTypeScriptTables(result, options));
-    items.push(generateKyselyDatabase(result, options));
-    return `${prefix}${items.join("\n")}\n`;
+    items.push(generateTypeScriptTables(result, options));
+    return items.join("\n");
+}
+
+function generateValibotEnums(enums: EnumDef[], options: GenOpts = {}): string {
+    // TODO: Implement Valibot enums generation
+    return "";
+}
+
+function generateValibotTableSchemas(
+    { tables, enums }: SqlParseResult,
+    options: GenOpts = {}
+): string {
+    // TODO: Implement Valibot table schemas generation
+    return "";
+}
+
+export function generateValibotSchemas(result: SqlParseResult, options: GenOpts = {}): string {
+    const items = [...HEADER] as string[];
+    items.push(generateValibotEnums(result.enums, options));
+    items.push(generateValibotTableSchemas(result, options));
+    return items.join("\n");
 }

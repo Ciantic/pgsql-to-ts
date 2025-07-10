@@ -1,17 +1,15 @@
 // This file is generated from SQL schema file by sql-to-ts.
 // Do not edit manually.
 
-import type { ColumnType } from "kysely";
-
 export type MyEnumExample = "good" | "bad" | "ugly" | "dont know";
 
-export type Database = {
-  special_key: {
+export interface SpecialKey {
     testPk: number;
-  },
-  various_types: {
-    bigserial: ColumnType<bigint, bigint | undefined, bigint>;
-    serial: ColumnType<number | null, number | null | undefined, number | null>;
+}
+
+export interface VariousTypes {
+    bigserial: bigint;
+    serial: number | null;
     testInteger: number | null;
     testBigint: bigint | null;
     testNumeric: string | null;
@@ -33,18 +31,19 @@ export type Database = {
     textArrayInteger: number[] | null;
     testBytea: Uint8Array | null;
     testXml: string | null;
-    testDefault: ColumnType<string | null, string | null | undefined, string | null>;
-    testDefaultInt: ColumnType<number, number | undefined, number>;
-    testDefaultNow: ColumnType<Date, Date | undefined, Date>;
-    testDefaultDecimal: ColumnType<string, string | undefined, string>;
-    testDefaultUuid: ColumnType<string, string | undefined, string>;
+    testDefault: string | null;
+    testDefaultInt: number;
+    testDefaultNow: Date;
+    testDefaultDecimal: string;
+    testDefaultUuid: string;
     testCheckIntBetween: number | null;
     testNotNull: string;
     testNotNullArray: string[];
-  },
-  test_foreignkeys: {
+}
+
+export interface TestForeignkeys {
     testPk: string;
     testFkToVariousTypes: bigint | null;
     testFkToSelf: string | null;
-  },
 }
+

@@ -6,6 +6,7 @@
     "npm:@types/node@24.0.10": "24.0.10",
     "npm:kysely@~0.28.2": "0.28.2",
     "npm:pgsql-parser@^17.7.8": "17.7.8",
+    "npm:valibot@^1.1.0": "1.1.0",
     "npm:vitest@^3.2.4": "3.2.4_@types+node@24.0.10_vite@7.0.2__@types+node@24.0.10__picomatch@4.0.2"
   },
   "npm": {
@@ -540,6 +541,9 @@
     "undici-types@7.8.0": {
       "integrity": "sha512-9UJ2xGDvQ43tYyVMpuHlsgApydB8ZKfVYTsLDhXkFL/6gfkp+U8xTGdh8pMJv1SpZna0zxG1DwsKZsreLbXBxw=="
     },
+    "valibot@1.1.0": {
+      "integrity": "sha512-Nk8lX30Qhu+9txPYTwM0cFlWLdPFsFr6LblzqIySfbZph9+BFsAHsNvHOymEviUepeIW6KFHzpX8TKhbptBXXw=="
+    },
     "vite-node@3.2.4_@types+node@24.0.10": {
       "integrity": "sha512-EbKSKh+bh1E1IFxeO0pg1n4dvoOTt0UDiXMd/qn++r98+jPO1xtJilvXldeuQ8giIB5IkpjCgMleHMNEsGH6pg==",
       "dependencies": [
@@ -620,6 +624,7 @@
         "npm:@types/node@24.0.10",
         "npm:kysely@~0.28.2",
         "npm:pgsql-parser@^17.7.8",
+        "npm:valibot@^1.1.0",
         "npm:vitest@^3.2.4"
       ]
     }

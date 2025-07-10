@@ -1,10 +1,6 @@
-import { generateTypeScript, parseSql } from "../src/lib.ts";
-import { expect, test } from "vitest";
+import { generateKyselyDatabase, generateTypeScript, parseSql } from "../src/lib.ts";
+import { expect, describe, test } from "vitest";
 import fs from "node:fs/promises";
-
-function sql(strings: TemplateStringsArray, ...values: any[]) {
-    return String.raw({ raw: strings }, ...values);
-}
 
 const schemaSql = fs.readFile(__dirname + "/schema.sql", "utf-8");
 
@@ -22,17 +18,29 @@ function snakeCaseToPascalCase(str: string): string {
         .replaceAll(/^[a-z]/g, (letter) => letter.toUpperCase());
 }
 
-test("parseSql parses the Create table statements", async () => {
-    const result = await parseSql(await schemaSql);
-    await expect(result).toMatchFileSnapshot(__dirname + "/__snapshots__/output_parsed.jsonc");
-});
-
-test("generateTypeScriptInterfaces generates TypeScript interfaces", async () => {
-    const parsed = await parseSql(await schemaSql);
-    const result = await generateTypeScript(parsed, {
-        renameEnums: snakeCaseToPascalCase,
-        renameColumns: snakeCaseToCamelCase,
-        renameTables: snakeCaseToPascalCase,
+describe("library tests", () => {
+    test("parseSql parses the Create table statements", async () => {
+        const result = await parseSql(await schemaSql);
+        await expect(result).toMatchFileSnapshot(__dirname + "/__snapshots__/output_parsed.jsonc");
     });
-    await expect(result).toMatchFileSnapshot(__dirname + "/__snapshots__/output_kysely.ts");
+
+    test("Generate kysely database", async () => {
+        const parsed = await parseSql(await schemaSql);
+        const result = await generateKyselyDatabase(parsed, {
+            renameEnums: snakeCaseToPascalCase,
+            renameColumns: snakeCaseToCamelCase,
+            renameTables: snakeCaseToPascalCase,
+        });
+        await expect(result).toMatchFileSnapshot(__dirname + "/__snapshots__/output_kysely.ts");
+    });
+
+    test("Generate typescript types", async () => {
+        const parsed = await parseSql(await schemaSql);
+        const result = await generateTypeScript(parsed, {
+            renameEnums: snakeCaseToPascalCase,
+            renameColumns: snakeCaseToCamelCase,
+            renameTables: snakeCaseToPascalCase,
+        });
+        await expect(result).toMatchFileSnapshot(__dirname + "/__snapshots__/output_typescript.ts");
+    });
 });
