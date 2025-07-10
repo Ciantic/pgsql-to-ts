@@ -88,6 +88,10 @@
           "notnull": false,
           "primarykey": false,
           "type": "numeric",
+          "typeParams": [
+            10,
+            2,
+          ],
           "unique": false,
         },
         {
@@ -112,6 +116,9 @@
           "notnull": false,
           "primarykey": false,
           "type": "varchar",
+          "typeParams": [
+            255,
+          ],
           "unique": false,
         },
         {
@@ -244,6 +251,10 @@
           "notnull": true,
           "primarykey": false,
           "type": "numeric",
+          "typeParams": [
+            10,
+            2,
+          ],
           "unique": false,
         },
         {

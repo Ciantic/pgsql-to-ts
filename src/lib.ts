@@ -25,6 +25,7 @@ export type FKCONSTR_MATCHTYPE =
 export type Column = {
     name: string;
     type: string;
+    typeParams?: (string | number | boolean)[];
     array: boolean;
     notnull: boolean;
     primarykey: boolean;
@@ -63,6 +64,24 @@ function sval(node: Node | undefined): string {
     throw new Error("Node does not contain a String property.");
 }
 
+function constval(node: Node | undefined): string | number | boolean {
+    if (node && "A_Const" in node && node.A_Const.ival?.ival !== undefined) {
+        return node.A_Const.ival.ival;
+    } else if (node && "A_Const" in node && node.A_Const.fval?.fval !== undefined) {
+        return node.A_Const.fval.fval;
+    } else if (node && "A_Const" in node && node.A_Const.sval?.sval !== undefined) {
+        return node.A_Const.sval.sval;
+    } else if (node && "A_Const" in node && node.A_Const.boolval?.boolval !== undefined) {
+        return node.A_Const.boolval.boolval;
+    } else if (node && "A_Const" in node && node.A_Const.bsval?.bsval !== undefined) {
+        return node.A_Const.bsval.bsval;
+    } else if (node && "A_Const" in node && node.A_Const.isnull !== undefined) {
+        return node.A_Const.isnull;
+    }
+
+    throw new Error("Node does not contain a valid constant value.");
+}
+
 function omitUndefined<T extends Record<string, any>>(
     obj: T
 ): { [key in keyof T as T[key] extends undefined ? never : key]: T[key] } {
@@ -82,6 +101,7 @@ async function parseColumn({ colname, typeName, constraints }: ColumnDef): Promi
     let primarykey = false;
     let unique = false;
     let array = false;
+    let typeParams: (string | number | boolean)[] = [];
     let generated_when: Column["generated_when"] | undefined = undefined;
     let defaultValue = undefined as string | undefined;
     let defaultCheck = undefined as string | undefined;
@@ -102,6 +122,10 @@ async function parseColumn({ colname, typeName, constraints }: ColumnDef): Promi
 
     if (typeName.arrayBounds && typeName.arrayBounds.length > 0) {
         array = true;
+    }
+
+    if (typeName.typmods && typeName.typmods.length > 0) {
+        typeParams = typeName.typmods.map(constval);
     }
 
     for (const constraint of constraints || []) {
@@ -168,6 +192,7 @@ async function parseColumn({ colname, typeName, constraints }: ColumnDef): Promi
 
     return omitUndefined({
         name: colName,
+        typeParams: typeParams.length > 0 ? typeParams : undefined,
         type,
         array,
         notnull,
@@ -290,7 +315,8 @@ export const PGTYPE_TO_TYPESCRIPT = {
 
 type GenOpts = {
     indent?: string;
-    mapping?: typeof PGTYPE_TO_TYPESCRIPT;
+    mappingToTypescript?: typeof PGTYPE_TO_TYPESCRIPT;
+    mappingToValibot?: typeof PGTYPES_TO_VALIBOT;
     renameEnums?: (name: string) => string;
     renameColumns?: (name: string) => string;
     renameTables?: (name: string) => string;
@@ -348,7 +374,7 @@ function generateTypescriptColumnType(
 ): string {
     const enumNames = enums.map(({ name }) => name);
     const renameEnums = options.renameEnums ?? identityf;
-    const typeMap = options.mapping ?? PGTYPE_TO_TYPESCRIPT;
+    const typeMap = options.mappingToTypescript ?? PGTYPE_TO_TYPESCRIPT;
     const columnType: keyof typeof typeMap = column.type as keyof typeof typeMap;
     let typeName = "";
 
@@ -461,6 +487,28 @@ export function generateTypeScript(result: SqlParseResult, options: GenOpts = {}
     items.push(generateTypeScriptTables(result, options));
     return items.join("\n");
 }
+
+const PGTYPES_TO_VALIBOT: typeof PGTYPE_TO_TYPESCRIPT = {
+    bigserial: "v.bigint()",
+    bool: "v.boolean()",
+    date: "v.date()",
+    float4: "v.number()",
+    float8: "v.number()",
+    int4: "v.number()",
+    int8: "v.bigint()",
+    json: "v.any()",
+    jsonb: "v.any()",
+    numeric: "v.string()",
+    serial: "v.number()",
+    text: "v.string()",
+    time: "v.string()",
+    uuid: "v.uuid()",
+    varchar: "v.string()",
+    timestamp: "v.date()",
+    timestamptz: "v.date()",
+    bytea: "v.uint8Array()",
+    xml: "v.string()",
+};
 
 function generateValibotEnums(enums: EnumDef[], options: GenOpts = {}): string {
     // TODO: Implement Valibot enums generation
