@@ -38,6 +38,8 @@ export type Database = {
     testDefaultNow: ColumnType<Date, Date | undefined, Date>;
     testDefaultDecimal: ColumnType<string, string | undefined, string>;
     testDefaultUuid: ColumnType<string, string | undefined, string>;
+    testCheckIsGt0: number | null;
+    testCheckIsLt100: number | null;
     testCheckIntBetween: number | null;
     testNotNull: string;
     testNotNullArray: string[];

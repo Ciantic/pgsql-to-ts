@@ -36,6 +36,8 @@ export interface VariousTypes {
     testDefaultNow: Date;
     testDefaultDecimal: string;
     testDefaultUuid: string;
+    testCheckIsGt0: number | null;
+    testCheckIsLt100: number | null;
     testCheckIntBetween: number | null;
     testNotNull: string;
     testNotNullArray: string[];

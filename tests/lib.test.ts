@@ -7,15 +7,15 @@ const schemaSql = fs.readFile(__dirname + "/schema.sql", "utf-8");
 function snakeCaseToCamelCase(str: string): string {
     // E.g. "my_enum_example" -> "myEnumExample"
     return str
-        .replaceAll(/_([a-z])/g, (_, letter) => letter.toUpperCase())
-        .replaceAll(/^[a-z]/g, (letter) => letter.toLowerCase());
+        .replaceAll(/_([a-z0-9])/g, (_, letter) => letter.toUpperCase())
+        .replaceAll(/^[a-z0-9]/g, (letter) => letter.toLowerCase());
 }
 
 function snakeCaseToPascalCase(str: string): string {
     // E.g. "my_enum_example" -> "MyEnumExample"
     return str
-        .replaceAll(/_([a-z])/g, (_, letter) => letter.toUpperCase())
-        .replaceAll(/^[a-z]/g, (letter) => letter.toUpperCase());
+        .replaceAll(/_([a-z0-9])/g, (_, letter) => letter.toUpperCase())
+        .replaceAll(/^[a-z0-9]/g, (letter) => letter.toUpperCase());
 }
 
 describe("library tests", () => {

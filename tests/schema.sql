@@ -36,6 +36,8 @@ CREATE TABLE "various_types" (
     "test_default_now" timestamptz default current_timestamp not null,
     "test_default_decimal" decimal(10, 2) default 0.00 not null,
     "test_default_uuid" uuid default gen_random_uuid() not null,
+    "test_check_is_gt0" integer check ("test_check_is_gt0" > 0),
+    "test_check_is_lt100" integer check ("test_check_is_lt100" < 100),
     "test_check_int_between" integer check ("test_check_int_between" > 0 and "test_check_int_between" < 100),
     "test_not_null" text not null,
     "test_not_null_array" text[] not null

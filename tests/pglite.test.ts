@@ -7,7 +7,7 @@ import * as fs from "node:fs/promises";
 
 describe("kysely", () => {
     test("kysely db schema", async () => {
-        const pglite = new PGlite("memory://test.db");
+        const pglite = new PGlite();
         const schemaSql = await fs.readFile(__dirname + "/schema.sql", "utf-8");
         await pglite.exec(schemaSql);
 
@@ -45,10 +45,12 @@ describe("kysely", () => {
             testDefaultNow: new Date("2023-06-15T10:30:00Z"),
             testDefaultDecimal: "50.25",
             testDefaultUuid: "123e4567-e89b-12d3-a456-426614174000",
+            testCheckIsGt0: 10,
+            testCheckIsLt100: 50,
             testCheckIntBetween: 50,
             testNotNull: "This field cannot be null",
             testNotNullArray: ["required", "array", "values"],
-        };
+        } satisfies k.InsertObject<Database, "various_types">;
 
         const [row] = await db
             .insertInto("various_types")
