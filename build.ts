@@ -7,9 +7,8 @@ export const rewriteTsImportsPlugin: esbuild.Plugin = {
     name: "rewrite-ts-imports",
     setup(build) {
         const tsImportRegex = /(?<=(?:import|export\s*[*{])[^"']+["'])([^"']+)(?=["'])/g;
-        build.onLoad({ filter: /\.(ts|js)$/ }, async (args) => {
+        build.onLoad({ filter: /\.ts$/ }, async (args) => {
             let source = await fs.readFile(args.path, "utf8");
-
             return {
                 contents: source.replaceAll(tsImportRegex, (match) => {
                     if (match.startsWith("./") || match.startsWith("../")) {
@@ -18,7 +17,7 @@ export const rewriteTsImportsPlugin: esbuild.Plugin = {
                     }
                     return match;
                 }),
-                loader: args.path.endsWith(".ts") ? "ts" : "js",
+                loader: "ts",
             };
         });
     },
