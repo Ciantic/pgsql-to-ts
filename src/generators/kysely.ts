@@ -5,7 +5,7 @@ import {
     PGTYPE_TO_TYPESCRIPT,
     type GenOpts,
 } from "./typescript.ts";
-import { identityf } from "../utils.ts";
+import { HEADER, identityf } from "../utils.ts";
 
 /**
  * Generate Kysely column type for a given column.
@@ -51,11 +51,7 @@ function generateKyselyColumnType(
 export function generateKyselyDatabase(result: SqlParseResult, options: GenOpts = {}): string {
     const indent = options.indent ?? "  ";
     const renameColumns = options.renameColumns ?? identityf;
-    const items: string[] = [
-        `// This file is generated from SQL schema file by sql-to-ts.`,
-        `// Do not edit manually.`,
-        ``,
-    ];
+    const items: string[] = [...HEADER];
     items.push(`import type { ColumnType } from "kysely";\n`);
     items.push(generateTypeScriptEnums(result.enums, options));
     items.push(`export type Database = {`);

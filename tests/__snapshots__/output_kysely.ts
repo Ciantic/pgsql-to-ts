@@ -1,4 +1,4 @@
-// This file is generated from SQL schema file by sql-to-ts.
+// This file is generated from SQL schema file by pgsql-to-ts.
 // Do not edit manually.
 
 import type { ColumnType } from "kysely";
