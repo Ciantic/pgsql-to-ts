@@ -5,7 +5,9 @@
     "module": "dist/index.js",
     "types": "dist/index.d.ts",
     "type": "module",
-    "bin": "./dist/cli.js",
+    "bin": {
+        "pgsql-to-ts": "./dist/cli.js"
+    },
     "devDependencies": {
         "@electric-sql/pglite": "^0.3.4",
         "@pgsql/types": "^17.6.1",
@@ -26,6 +28,7 @@
     },
     "scripts": {
         "test": "vitest",
-        "bundle": "rimraf dist && tsc"
+        "bundle": "rimraf dist && tsc",
+        "cli": "ts-node ./src/cli.ts"
     }
 }
