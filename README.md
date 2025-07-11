@@ -1,15 +1,5 @@
-# kysely-from-sql
+# pg-to-ts
 
-To install dependencies:
+Generates TypeScript, Kysely database from Postgres SQL schema file.
 
-```bash
-bun install
-```
-
-To run:
-
-```bash
-bun run lib.ts
-```
-
-This project was created using `bun init` in bun v1.2.18. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+Develope with `npm install`, `bun install`, `pnpm install` or `deno install`.
