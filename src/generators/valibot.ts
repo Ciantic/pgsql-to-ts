@@ -1,7 +1,7 @@
 import * as v from "valibot";
-import type { EnumDef, SqlParseResult } from "../parser";
-import type { GenOpts } from "./typescript";
-import { HEADER } from "../utils";
+import type { EnumDef, SqlParseResult } from "../parser.js";
+import type { GenOpts } from "./typescript.js";
+import { HEADER } from "../utils.js";
 
 const PGTYPES_TO_VALIBOT = {
     bigserial: () => v.bigint(),

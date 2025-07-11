@@ -8,7 +8,7 @@ export const identityf = <T>(v: T): T => v;
 
 export function omitUndefined<T extends Record<string, any>>(
     obj: T
-): { [key in keyof T as T[key] extends undefined ? never : key]: T[key] } {
+): { [key in keyof T as undefined extends T[key] ? never : key]: T[key] } {
     const result: Record<string, any> = {};
     for (const key in obj) {
         if (obj[key] !== undefined) {
@@ -17,3 +17,12 @@ export function omitUndefined<T extends Record<string, any>>(
     }
     return result as T;
 }
+
+// const someObject = {
+//     foo: "bar",
+//     bar: 42,
+//     baz: undefined,
+// };
+
+// const otherObject = omitUndefined(someObject);
+// // { foo: string, bar: number }

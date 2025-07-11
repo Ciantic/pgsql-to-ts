@@ -1,6 +1,6 @@
-import { HEADER } from "../utils";
-import type { Column, EnumDef, SqlParseResult } from "../parser";
-import { identityf } from "../utils";
+import { HEADER } from "../utils.js";
+import type { Column, EnumDef, SqlParseResult } from "../parser.js";
+import { identityf } from "../utils.js";
 
 /**
  * This typemap is dependent on PostgreSQL driver (e.g. node-postgres or PgLite)

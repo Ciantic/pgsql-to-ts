@@ -1,6 +1,6 @@
 import { deparse, parse } from "pgsql-parser";
 import type { ColumnDef, CreateEnumStmt, CreateStmt, Node, ParseResult } from "@pgsql/types";
-import { omitUndefined } from "./utils";
+import { omitUndefined } from "./utils.js";
 
 // https://doxygen.postgresql.org/parsenodes_8h.html#aa2da3f289480b73dbcaccf0404657c65
 export type FKCONSTR_ACTION =
