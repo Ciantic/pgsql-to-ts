@@ -1,4 +1,4 @@
-import { generateKyselyDatabase, generateTypeScript, parseSql } from "../src/lib.ts";
+import { generateKyselyDatabase, generateTypeScript, parseSql } from "../src/index.ts";
 import { expect, describe, test } from "vitest";
 import fs from "node:fs/promises";
 

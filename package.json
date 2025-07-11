@@ -1,14 +1,16 @@
 {
-    "name": "kysely-from-sql",
-    "module": "lib.ts",
+    "name": "sql-to-ts",
+    "module": "src/index.ts",
     "type": "module",
     "devDependencies": {
         "@electric-sql/pglite": "^0.3.4",
         "@pgsql/types": "^17.6.1",
         "@types/node": "24.0.10",
+        "arktype": "^2.1.20",
         "kysely": "^0.28.2",
         "valibot": "^1.1.0",
-        "vitest": "^3.2.4"
+        "vitest": "^3.2.4",
+        "zod": "^4.0.5"
     },
     "peerDependencies": {
         "typescript": "^5"

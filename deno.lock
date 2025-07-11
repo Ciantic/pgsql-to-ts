@@ -4,12 +4,23 @@
     "npm:@electric-sql/pglite@~0.3.4": "0.3.4",
     "npm:@pgsql/types@^17.6.1": "17.6.1",
     "npm:@types/node@24.0.10": "24.0.10",
+    "npm:arktype@^2.1.20": "2.1.20",
     "npm:kysely@~0.28.2": "0.28.2",
     "npm:pgsql-parser@^17.7.8": "17.7.8",
     "npm:valibot@^1.1.0": "1.1.0",
-    "npm:vitest@^3.2.4": "3.2.4_@types+node@24.0.10_vite@7.0.2__@types+node@24.0.10__picomatch@4.0.2"
+    "npm:vitest@^3.2.4": "3.2.4_@types+node@24.0.10_vite@7.0.2__@types+node@24.0.10__picomatch@4.0.2",
+    "npm:zod@^4.0.5": "4.0.5"
   },
   "npm": {
+    "@ark/schema@0.46.0": {
+      "integrity": "sha512-c2UQdKgP2eqqDArfBqQIJppxJHvNNXuQPeuSPlDML4rjw+f1cu0qAlzOG4b8ujgm9ctIDWwhpyw6gjG5ledIVQ==",
+      "dependencies": [
+        "@ark/util"
+      ]
+    },
+    "@ark/util@0.46.0": {
+      "integrity": "sha512-JPy/NGWn/lvf1WmGCPw2VGpBg5utZraE84I7wli18EDF3p3zc/e9WolT35tINeZO3l7C77SjqRJeAUoT0CvMRg=="
+    },
     "@electric-sql/pglite@0.3.4": {
       "integrity": "sha512-h5hoL2GuxcWN8Q3+jtesIRem14iIvAZVEsTeUF6eO9RiUb6ar73QVIEW9t+Ud58iXAcAE2dFMtWqw3W2Oo4LDw=="
     },
@@ -320,6 +331,13 @@
         "tinyrainbow"
       ]
     },
+    "arktype@2.1.20": {
+      "integrity": "sha512-IZCEEXaJ8g+Ijd59WtSYwtjnqXiwM8sWQ5EjGamcto7+HVN9eK0C4p0zDlCuAwWhpqr6fIBkxPuYDl4/Mcj/+Q==",
+      "dependencies": [
+        "@ark/schema",
+        "@ark/util"
+      ]
+    },
     "assertion-error@2.0.1": {
       "integrity": "sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA=="
     },
@@ -614,6 +632,9 @@
         "stackback"
       ],
       "bin": true
+    },
+    "zod@4.0.5": {
+      "integrity": "sha512-/5UuuRPStvHXu7RS+gmvRf4NXrNxpSllGwDnCBcJZtQsKrviYXm54yDGV2KYNLT5kq0lHGcl7lqWJLgSaG+tgA=="
     }
   },
   "workspace": {
@@ -622,10 +643,12 @@
         "npm:@electric-sql/pglite@~0.3.4",
         "npm:@pgsql/types@^17.6.1",
         "npm:@types/node@24.0.10",
+        "npm:arktype@^2.1.20",
         "npm:kysely@~0.28.2",
         "npm:pgsql-parser@^17.7.8",
         "npm:valibot@^1.1.0",
-        "npm:vitest@^3.2.4"
+        "npm:vitest@^3.2.4",
+        "npm:zod@^4.0.5"
       ]
     }
   }
