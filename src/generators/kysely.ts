@@ -1,11 +1,11 @@
-import type { Column, EnumDef, SqlParseResult } from "../parser.js";
+import type { Column, EnumDef, SqlParseResult } from "../parser.ts";
 import {
     generateTypescriptColumnType,
     generateTypeScriptEnums,
     PGTYPE_TO_TYPESCRIPT,
     type GenOpts,
-} from "./typescript.js";
-import { identityf } from "../utils.js";
+} from "./typescript.ts";
+import { identityf } from "../utils.ts";
 
 /**
  * Generate Kysely column type for a given column.
