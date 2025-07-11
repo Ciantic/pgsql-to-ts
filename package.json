@@ -1,9 +1,11 @@
 {
-    "name": "pg-to-ts",
+    "name": "pgsql-to-ts",
+    "exports": "./dist/index.js",
     "main": "dist/index.js",
     "module": "dist/index.js",
     "types": "dist/index.d.ts",
     "type": "module",
+    "bin": "./dist/cli.js",
     "devDependencies": {
         "@electric-sql/pglite": "^0.3.4",
         "@pgsql/types": "^17.6.1",
