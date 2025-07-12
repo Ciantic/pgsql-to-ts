@@ -37,8 +37,14 @@ export interface VariousTypes {
     testDefaultDecimal: string;
     testDefaultUuid: string;
     testCheckIsGt0: number | null;
+    testCheckIsGte0: number | null;
+    testCheckIsLte100: number | null;
     testCheckIsLt100: number | null;
+    testCheckEqual42: number | null;
+    testCheckNotEqual42: number | null;
     testCheckIntBetween: number | null;
+    testCheckDecimalGt0: string | null;
+    testCheckFoo: number | null;
     testNotNull: string;
     testNotNullArray: string[];
 }

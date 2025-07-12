@@ -17,6 +17,25 @@ export type FKCONSTR_MATCHTYPE =
 
 // https://pglast.readthedocs.io/en/v3/parsenodes.html#pglast.enums.parsenodes.pglast.enums.parsenodes.ConstrType
 
+type CheckSimpleRule =
+    | {
+          operator: ">" | ">=";
+          min: number;
+      }
+    | {
+          operator: "<" | "<=";
+          max: number;
+      }
+    | {
+          operator: "=" | "!=";
+          value: number;
+      }
+    | {
+          operator: "BETWEEN";
+          min: number;
+          max: number;
+      };
+
 export type Column = {
     name: string;
     type: string;
@@ -24,10 +43,11 @@ export type Column = {
     array: boolean;
     notnull: boolean;
     primarykey: boolean;
-    generated_when?: "always" | "by default";
+    generatedWhen?: "always" | "by default";
     unique: boolean;
     default?: string;
     check?: string;
+    checkSimple?: CheckSimpleRule;
     foreignKey?: {
         table: string;
         column: string;
@@ -51,6 +71,67 @@ export type EnumDef = {
     name: string;
     values: string[];
 };
+
+/**
+ * Parse given check equation into a KnownCheck object.
+ *
+ * Supported equations:
+ *
+ * - `column_name > 0`
+ * - `"column_name" > 0`
+ * - `column_name < 100`
+ * - `column_name <= 100`
+ * - `column_name = 42`
+ * - `column_name != 42`
+ * - `column_name >= 0`
+ * - `column_name <= 100`
+ * - `column_name BETWEEN 0 AND 100`
+ */
+function parseSimpleCheckRule(
+    equation: string
+): { column: string; rule: CheckSimpleRule } | undefined {
+    const trimmed = equation.trim();
+    const match = trimmed.match(
+        /^(?<column>[\w"]+)\s*(?<operator>>=|<=|>|<|=|!=|BETWEEN)\s*(?<value>.+)$/
+    );
+    if (!match || !match.groups) {
+        return undefined;
+    }
+    let { operator, value, column } = match.groups;
+    if (!column || !operator || !value) {
+        return undefined;
+    }
+
+    if (column.startsWith('"') && column.endsWith('"')) {
+        column = column.slice(1, -1); // Remove quotes
+    }
+
+    if (operator === "BETWEEN") {
+        const parts = value.split("AND").map((v) => v.trim());
+        if (parts.length !== 2) return undefined;
+        const min = Number(parts[0]);
+        const max = Number(parts[1]);
+        if (isNaN(min) || isNaN(max)) return undefined;
+        return { column, rule: { operator, min, max } };
+    }
+
+    const numValue = Number(value?.trim());
+    if (isNaN(numValue)) return undefined;
+
+    switch (operator) {
+        case ">":
+        case ">=":
+            return { column, rule: { operator, min: numValue } };
+        case "<":
+        case "<=":
+            return { column, rule: { operator, max: numValue } };
+        case "=":
+        case "!=":
+            return { column, rule: { operator, value: numValue } };
+        default:
+            return undefined;
+    }
+}
 
 function sval(node: Node | undefined): string {
     if (node && "String" in node && node.String.sval) {
@@ -85,10 +166,11 @@ async function parseColumn({ colname, typeName, constraints }: ColumnDef): Promi
     let unique = false;
     let array = false;
     let typeParams: (string | number | boolean)[] = [];
-    let generated_when: Column["generated_when"] | undefined = undefined;
+    let generatedWhen: Column["generatedWhen"] | undefined = undefined;
     let defaultValue = undefined as string | undefined;
     let defaultCheck = undefined as string | undefined;
     let foreignkeyRelation = undefined as Column["foreignKey"] | undefined;
+    let checkSimple: CheckSimpleRule | undefined = undefined;
 
     if (!colName) {
         console.warn("No column name found in ColumnDef.");
@@ -160,12 +242,20 @@ async function parseColumn({ colname, typeName, constraints }: ColumnDef): Promi
             } else if (contype === "CONSTR_CHECK") {
                 if (raw_expr) {
                     defaultCheck = await deparse(raw_expr);
+                    const parsed = parseSimpleCheckRule(defaultCheck);
+                    if (parsed && parsed.column != colName) {
+                        console.warn(
+                            `Check constraint column "${parsed.column}" does not match column name "${colName}".`
+                        );
+                    } else {
+                        checkSimple = parsed?.rule;
+                    }
                 }
             } else if (contype === "CONSTR_IDENTITY") {
                 if (constraint.Constraint.generated_when === "a") {
-                    generated_when = "always";
+                    generatedWhen = "always";
                 } else if (constraint.Constraint.generated_when === "d") {
-                    generated_when = "by default";
+                    generatedWhen = "by default";
                 }
             } else {
                 console.warn("Unknown constraint type:", contype);
@@ -179,12 +269,14 @@ async function parseColumn({ colname, typeName, constraints }: ColumnDef): Promi
         type,
         array,
         notnull,
+        generatedWhen,
         primarykey,
         unique,
         foreignKey: foreignkeyRelation,
         default: defaultValue,
         check: defaultCheck,
-    });
+        checkSimple,
+    }) satisfies Column;
 }
 
 async function parseTable({ tableElts, relation }: CreateStmt): Promise<Table> {

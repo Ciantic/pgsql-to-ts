@@ -37,8 +37,16 @@ CREATE TABLE "various_types" (
     "test_default_decimal" decimal(10, 2) default 0.00 not null,
     "test_default_uuid" uuid default gen_random_uuid() not null,
     "test_check_is_gt0" integer check ("test_check_is_gt0" > 0),
+    "test_check_is_gte0" integer check ("test_check_is_gte0" >= 0),
+    "test_check_is_lte100" integer check ("test_check_is_lte100" <= 100),
     "test_check_is_lt100" integer check ("test_check_is_lt100" < 100),
-    "test_check_int_between" integer check ("test_check_int_between" > 0 and "test_check_int_between" < 100),
+    "test_check_equal42" integer check ("test_check_equal42" = 42),
+    "test_check_not_equal42" integer check ("test_check_not_equal42" != 42),
+    "test_check_int_between" integer check ("test_check_int_between" BETWEEN 0 and 100),
+    "test_check_decimal_gt0" decimal(10, 2) check ("test_check_decimal_gt0" > 0),
+
+    -- Incorrect check constraint for testing (tests another column for no good reason)
+    "test_check_foo" integer check ("test_check_equal42" = 42),
     "test_not_null" text not null,
     "test_not_null_array" text[] not null
 );

@@ -52,6 +52,13 @@ function generateValibotEnums(enums: EnumDef[], options: GenOpts = {}): string {
     return "";
 }
 
+function generateValibotColumnType(column: {
+    type: string;
+    typeParams?: (string | number | boolean)[];
+}): string {
+    return "";
+}
+
 function generateValibotTableSchemas(
     { tables, enums }: SqlParseResult,
     options: GenOpts = {}

@@ -21,9 +21,9 @@ function generateKyselyColumnType(
 
     if (columnType === "serial" || columnType === "bigserial") {
         typeName = `ColumnType<${typeName}, ${typeName} | undefined, ${typeName}>`;
-    } else if (column.generated_when === "always") {
+    } else if (column.generatedWhen === "always") {
         typeName = `ColumnType<${typeName}, never, never>`;
-    } else if (column.generated_when === "by default") {
+    } else if (column.generatedWhen === "by default") {
         typeName = `ColumnType<${typeName}, ${typeName} | undefined, ${typeName}>`;
     } else if (column.default) {
         typeName = `ColumnType<${typeName}, ${typeName} | undefined, ${typeName}>`;

@@ -7,7 +7,7 @@ export type MyEnumExample = "good" | "bad" | "ugly" | "dont know";
 
 export type Database = {
   special_key: {
-    testPk: number;
+    testPk: ColumnType<number, never, never>;
   },
   various_types: {
     bigserial: ColumnType<bigint, bigint | undefined, bigint>;
@@ -39,8 +39,14 @@ export type Database = {
     testDefaultDecimal: ColumnType<string, string | undefined, string>;
     testDefaultUuid: ColumnType<string, string | undefined, string>;
     testCheckIsGt0: number | null;
+    testCheckIsGte0: number | null;
+    testCheckIsLte100: number | null;
     testCheckIsLt100: number | null;
+    testCheckEqual42: number | null;
+    testCheckNotEqual42: number | null;
     testCheckIntBetween: number | null;
+    testCheckDecimalGt0: string | null;
+    testCheckFoo: number | null;
     testNotNull: string;
     testNotNullArray: string[];
   },
