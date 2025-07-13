@@ -212,7 +212,7 @@ async function parseColumn({ colname, typeName, constraints }: ColumnDef): Promi
     let array = false;
     let typeParams: (string | number | boolean)[] = [];
     let generatedWhen: Column["generatedWhen"] | undefined = undefined;
-    let defaultSimpleValue: string | undefined = undefined;
+    let defaultSimpleValue: string | number | boolean | undefined = undefined;
     let defaultValue = undefined as string | undefined;
     let defaultCheck = undefined as string | undefined;
     let foreignkeyRelation = undefined as Column["foreignKey"] | undefined;
