@@ -125,6 +125,9 @@ function generateValibotColumnSchema(
     if (column.array) {
         typeFunc = v.array(typeFunc as any) as any;
     }
+    if (!column.notnull) {
+        typeFunc = v.nullable(typeFunc as any) as any;
+    }
     return typeFunc;
 }
 
