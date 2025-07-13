@@ -82,6 +82,7 @@ export type Column = {
     generatedWhen?: "always" | "by default";
     unique: boolean;
     default?: string;
+    defaultSimple?: string;
     check?: string;
     checkSimple?: CheckSimpleRule;
     foreignKey?: {
@@ -107,6 +108,14 @@ export type EnumDef = {
     name: string;
     values: string[];
 };
+
+function parseSimpleDefaultValue(node: Node | undefined): string | number | boolean | undefined {
+    if (!node) return undefined;
+    if ("A_Const" in node && node.A_Const) {
+        return constval(node);
+    }
+    return undefined;
+}
 
 /**
  * Parse given check equation into a KnownCheck object.
@@ -203,6 +212,7 @@ async function parseColumn({ colname, typeName, constraints }: ColumnDef): Promi
     let array = false;
     let typeParams: (string | number | boolean)[] = [];
     let generatedWhen: Column["generatedWhen"] | undefined = undefined;
+    let defaultSimpleValue: string | undefined = undefined;
     let defaultValue = undefined as string | undefined;
     let defaultCheck = undefined as string | undefined;
     let foreignkeyRelation = undefined as Column["foreignKey"] | undefined;
@@ -274,6 +284,7 @@ async function parseColumn({ colname, typeName, constraints }: ColumnDef): Promi
             } else if (contype === "CONSTR_DEFAULT") {
                 if (raw_expr) {
                     defaultValue = await deparse(raw_expr);
+                    defaultSimpleValue = parseSimpleDefaultValue(raw_expr);
                 }
             } else if (contype === "CONSTR_CHECK") {
                 if (raw_expr) {
@@ -310,6 +321,7 @@ async function parseColumn({ colname, typeName, constraints }: ColumnDef): Promi
         unique,
         foreignKey: foreignkeyRelation,
         default: defaultValue,
+        defaultSimple: defaultSimpleValue,
         check: defaultCheck,
         checkSimple,
     }) satisfies Column;

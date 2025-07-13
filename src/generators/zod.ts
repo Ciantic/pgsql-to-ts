@@ -1,7 +1,8 @@
+import type { ZodSchema } from "zod";
 import type { GenOpts, Column, EnumDef, SqlParseResult, PgTypes, Mapper } from "../parser.ts";
 import { HEADER, identityf } from "../utils.ts";
 
-export type ZodLibrary = typeof import("zod");
+type ZodLibrary = typeof import("zod");
 
 /**
  * Fake Zod
@@ -84,7 +85,7 @@ const comparisonOperator = (c: Column, original: any) => {
         return `z.literal(${c.checkSimple.value})`;
     } else if (c.checkSimple?.operator === "!=") {
         // Zod doesn't have a direct "not equal" validator, so we use refine
-        return `${original}.refine(val => val !== ${c.checkSimple.value}, { message: "Value must not equal ${c.checkSimple.value}" })`;
+        return `${original}.refine(val => val !== ${c.checkSimple.value})`;
     } else if (c.checkSimple?.operator === "BETWEEN") {
         return `${original}.gte(${c.checkSimple.min}).lte(${c.checkSimple.max})`;
     }
@@ -111,7 +112,7 @@ export const PGTYPES_TO_ZOD = {
     timestamptz: (c: Column) => z.date(),
     bytea: (c: Column) => z.any(),
     xml: (c: Column) => z.string(),
-} satisfies Record<PgTypes, (c: Column) => any>;
+} satisfies Record<PgTypes, (c: Column) => ZodSchema<any, any, any>>;
 
 function generateZodEnums(enums: EnumDef[], options: GenOpts = {}): string {
     return enums.map((e) => generateZodEnumType(e, options)).join("\n");
@@ -150,7 +151,11 @@ function generateZodColumnSchema(
     }
 
     if (!column.notnull) {
-        typeFunc = `${typeFunc}.nullable()`;
+        typeFunc = `${typeFunc}.nullish()`;
+    }
+
+    if (typeof column.defaultSimple !== "undefined") {
+        typeFunc = `${typeFunc}.default(${JSON.stringify(column.defaultSimple)})`;
     }
 
     return typeFunc;

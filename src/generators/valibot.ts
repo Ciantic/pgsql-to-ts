@@ -2,7 +2,7 @@ import type { GenOpts, Column, EnumDef, SqlParseResult, PgTypes, Mapper } from "
 import { HEADER, identityf } from "../utils.ts";
 import type { BaseSchema } from "valibot";
 
-export type ValibotLibrary = typeof import("valibot");
+type ValibotLibrary = typeof import("valibot");
 
 /**
  * Fake Valibot
@@ -125,8 +125,11 @@ function generateValibotColumnSchema(
     if (column.array) {
         typeFunc = v.array(typeFunc as any) as any;
     }
-    if (!column.notnull) {
-        typeFunc = v.nullable(typeFunc as any) as any;
+
+    if (typeof column.defaultSimple !== "undefined") {
+        typeFunc = v.nullish(typeFunc as any, JSON.stringify(column.defaultSimple)) as any;
+    } else if (!column.notnull) {
+        typeFunc = v.nullish(typeFunc as any) as any;
     }
     return typeFunc;
 }
