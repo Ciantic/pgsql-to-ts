@@ -2,6 +2,42 @@ import { deparse, parse } from "pgsql-parser";
 import type { ColumnDef, CreateEnumStmt, CreateStmt, Node, ParseResult } from "@pgsql/types";
 import { omitUndefined } from "./utils.ts";
 
+export type PgTypes =
+    | "bigserial"
+    | "bool"
+    | "date"
+    | "float4"
+    | "float8"
+    | "int4"
+    | "int8"
+    | "json"
+    | "jsonb"
+    | "numeric"
+    | "serial"
+    | "text"
+    | "time"
+    | "uuid"
+    | "varchar"
+    | "timestamp"
+    | "timestamptz"
+    | "bytea"
+    | "xml";
+
+export type Mapper = {
+    [k in PgTypes]: (c: Column) => string;
+};
+
+export type GenOpts = {
+    indent?: string;
+    mappingToTypescript?: Mapper;
+    mappingToValibot?: Mapper;
+    mappingToZod?: Mapper;
+    mappingToArktype?: Mapper;
+    renameEnums?: (name: string) => string;
+    renameColumns?: (name: string) => string;
+    renameTables?: (name: string) => string;
+};
+
 // https://doxygen.postgresql.org/parsenodes_8h.html#aa2da3f289480b73dbcaccf0404657c65
 export type FKCONSTR_ACTION =
     | "c" // FKCONSTR_ACTION_CASCADE
@@ -38,7 +74,7 @@ type CheckSimpleRule =
 
 export type Column = {
     name: string;
-    type: string;
+    type: PgTypes | {};
     typeParams?: (string | number | boolean)[];
     array: boolean;
     notnull: boolean;

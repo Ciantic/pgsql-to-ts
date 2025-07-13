@@ -1,75 +1,168 @@
-import * as v from "valibot";
-import type { EnumDef, SqlParseResult } from "../parser.ts";
-import type { GenOpts } from "./typescript.ts";
-import { HEADER } from "../utils.ts";
+import type { GenOpts, Column, EnumDef, SqlParseResult, PgTypes, Mapper } from "../parser.ts";
+import { HEADER, identityf } from "../utils.ts";
+import type { BaseSchema } from "valibot";
 
-const PGTYPES_TO_VALIBOT = {
-    bigserial: () => v.bigint(),
-    bool: () => v.boolean(),
-    date: () => v.date(),
-    float4: () => v.number(),
-    float8: () => v.number(),
-    int4: () => v.number(),
-    int8: () => v.bigint(),
-    json: () => v.any(),
-    jsonb: () => v.any(),
-    numeric: () => v.string(),
-    serial: () => v.number(),
-    text: () => v.string(),
-    time: () => v.string(),
-    uuid: () => v.uuid(),
-    varchar: () => v.string(),
-    timestamp: () => v.date(),
-    timestamptz: () => v.date(),
-    bytea: () => v.array(v.number()),
-    xml: () => v.string(),
-};
+export type ValibotLibrary = typeof import("valibot");
 
-// const PGTYPES_TO_VALIBOT: typeof PGTYPE_TO_TYPESCRIPT = {
-//     bigserial: "v.bigint()",
-//     bool: "v.boolean()",
-//     date: "v.date()",
-//     float4: "v.number()",
-//     float8: "v.number()",
-//     int4: "v.number()",
-//     int8: "v.bigint()",
-//     json: "v.any()",
-//     jsonb: "v.any()",
-//     numeric: "v.string()",
-//     serial: "v.number()",
-//     text: "v.string()",
-//     time: "v.string()",
-//     uuid: "v.uuid()",
-//     varchar: "v.string()",
-//     timestamp: "v.date()",
-//     timestamptz: "v.date()",
-//     bytea: "v.uint8Array()",
-//     xml: "v.string()",
-// };
-
-function generateValibotEnums(enums: EnumDef[], options: GenOpts = {}): string {
-    // TODO: Implement Valibot enums generation
-    return "";
+/**
+ * Fake Valibot
+ *
+ * This function creates a proxy that simulates the Valibot API, but instead returns strings.
+ *
+ * ```typescript
+ * const v = fakeValibot();
+ *
+ * v.string(); // returns "v.string()"
+ * v.pipe(v.string(), v.number()); // returns "v.pipe(v.string(), v.number())"
+ * ```
+ */
+function fakeValibot(): ValibotLibrary {
+    return new Proxy(
+        {},
+        {
+            get: (target, prop) => {
+                if (typeof prop !== "string") {
+                    throw new Error(`Symbols are not supported`);
+                }
+                return (...args: any[]) => {
+                    return `v.${prop}(${args.join(", ")})`;
+                };
+            },
+        }
+    ) as any;
 }
 
-function generateValibotColumnType(column: {
-    type: string;
-    typeParams?: (string | number | boolean)[];
-}): string {
-    return "";
+export const v: ValibotLibrary = fakeValibot();
+
+const TYPES_WITH_COMPARISON_OP = ["int4", "int8", "float4", "float8", "numeric"] as PgTypes[];
+
+const comparisonOperator = (c: Column, original: any) => {
+    let { minValue, maxValue, notValue, value } = v;
+    // Numeric types are strings when coming from postgres, valibot doesn't have
+    // minValue/maxValue/notValue/value for decimal strings. However we can use
+    // the same logic as for numbers because JS can handle sloppy comparison
+    // between string like decimals and numbers.
+    //
+    // Notice: `"12.34" > 10` is true, `"12.34" > 13` is false
+    //
+    // https://github.com/fabian-hiller/valibot/issues/1247
+    if (c.type === "numeric") {
+        minValue = (v: any) => `v.minValue(${v} as any)` as any;
+        maxValue = (v: any) => `v.maxValue(${v} as any)` as any;
+        notValue = (v: any) => `v.notValue(${typeof v === "number" ? `"${v}"` : v})` as any;
+        value = (v: any) => `v.value(${typeof v === "number" ? `"${v}"` : v})` as any;
+    }
+    if (c.checkSimple?.operator === ">") {
+        return v.pipe(original, minValue(c.checkSimple.min), notValue(c.checkSimple.min));
+    } else if (c.checkSimple?.operator === ">=") {
+        return v.pipe(original, minValue(c.checkSimple.min));
+    } else if (c.checkSimple?.operator === "<") {
+        return v.pipe(original, maxValue(c.checkSimple.max), notValue(c.checkSimple.max));
+    } else if (c.checkSimple?.operator === "<=") {
+        return v.pipe(original, maxValue(c.checkSimple.max));
+    } else if (c.checkSimple?.operator === "=") {
+        return v.pipe(original, value(c.checkSimple.value));
+    } else if (c.checkSimple?.operator === "!=") {
+        return v.pipe(original, notValue(c.checkSimple.value));
+    } else if (c.checkSimple?.operator === "BETWEEN") {
+        return v.pipe(original, minValue(c.checkSimple.min), maxValue(c.checkSimple.max));
+    }
+    return original;
+};
+
+export const PGTYPES_TO_VALIBOT = {
+    bigserial: (c: Column) => v.bigint(),
+    bool: (c: Column) => v.boolean(),
+    date: (c: Column) => v.date(),
+    float4: (c: Column) => v.number(),
+    float8: (c: Column) => v.number(),
+    int4: (c: Column) => v.pipe(v.number(), v.integer()),
+    int8: (c: Column) => v.bigint(),
+    json: (c: Column) => v.any(),
+    jsonb: (c: Column) => v.any(),
+    numeric: (c: Column) => v.pipe(v.string(), v.decimal()),
+    serial: (c: Column) => v.pipe(v.number(), v.integer()),
+    text: (c: Column) => v.string(),
+    time: (c: Column) => v.string(),
+    uuid: (c: Column) => v.pipe(v.string(), v.uuid()),
+    varchar: (c: Column) => v.string(),
+    timestamp: (c: Column) => v.date(),
+    timestamptz: (c: Column) => v.date(),
+    bytea: (c: Column) => v.any(),
+    xml: (c: Column) => v.string(),
+} satisfies Record<PgTypes, (c: Column) => BaseSchema<any, any, any>>;
+
+function generateValibotEnums(enums: EnumDef[], options: GenOpts = {}): string {
+    return enums.map((e) => generateValibotEnumType(e, options)).join("\n");
+}
+
+function generateValibotEnumType({ name, values }: EnumDef, options: GenOpts = {}): string {
+    const renameEnums = options.renameEnums ?? identityf;
+    const formattedValues = values.map((v) => `"${v}"`).join(", ");
+    return `export const ${renameEnums(name)} = v.picklist([${formattedValues}]);`;
+}
+
+function generateValibotColumnSchema(
+    { column, enums }: { column: Column; enums: EnumDef[] },
+    options: GenOpts = {}
+) {
+    const renameEnums = options.renameEnums ?? identityf;
+    const v = fakeValibot();
+    const typeMap = (options.mappingToValibot ?? (PGTYPES_TO_VALIBOT as any)) as Mapper;
+    const columnType = column.type as PgTypes;
+    let typeFunc = "";
+
+    if (columnType in typeMap) {
+        typeFunc = typeMap[columnType](column);
+    } else if (enums.map((e) => e.name).includes(columnType)) {
+        typeFunc = renameEnums(columnType);
+    } else {
+        throw new Error(`Unknown column type: ${columnType}`);
+    }
+    if (TYPES_WITH_COMPARISON_OP.includes(columnType)) {
+        typeFunc = comparisonOperator(column, typeFunc);
+    }
+    if (column.array) {
+        typeFunc = v.array(typeFunc as any) as any;
+    }
+    return typeFunc;
 }
 
 function generateValibotTableSchemas(
     { tables, enums }: SqlParseResult,
     options: GenOpts = {}
 ): string {
-    // TODO: Implement Valibot table schemas generation
-    return "";
+    const indent = options.indent ?? "  ";
+    const renameTables = options.renameTables ?? identityf;
+    const renameColumns = options.renameColumns ?? identityf;
+    const items: string[] = [];
+    for (const table of tables) {
+        const tableName = renameTables(table.name);
+        const columns: string[] = [];
+
+        for (const column of table.columns) {
+            const columnName = renameColumns(column.name);
+            const type = generateValibotColumnSchema({ column, enums }, options);
+            columns.push(`${indent}${columnName}: ${type}`);
+        }
+
+        items.push(`export const ${tableName} = v.object({`);
+        items.push(columns.join(",\n"));
+        items.push(`});`);
+        items.push(``);
+    }
+
+    return items.join("\n");
 }
 
 export function generateValibotSchemas(result: SqlParseResult, options: GenOpts = {}): string {
     const items = [...HEADER] as string[];
+    items.push(`import * as v from "valibot";`);
+    items.push(``);
     items.push(generateValibotEnums(result.enums, options));
+    if (result.enums.length > 0) {
+        items.push(``);
+    }
     items.push(generateValibotTableSchemas(result, options));
     return items.join("\n");
 }

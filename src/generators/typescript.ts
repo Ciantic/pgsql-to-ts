@@ -1,5 +1,5 @@
 import { HEADER } from "../utils.ts";
-import type { Column, EnumDef, SqlParseResult } from "../parser.ts";
+import type { Column, EnumDef, GenOpts, Mapper, SqlParseResult } from "../parser.ts";
 import { identityf } from "../utils.ts";
 
 /**
@@ -7,38 +7,27 @@ import { identityf } from "../utils.ts";
  * and how it maps PostgreSQL types to JavaScript types.
  */
 export const PGTYPE_TO_TYPESCRIPT = {
-    bigserial: "bigint",
-    bool: "boolean",
-    date: "Date",
-    float4: "number",
-    float8: "number",
-    int4: "number",
-    int8: "bigint",
-    json: "any",
-    jsonb: "any",
-    numeric: "string",
-    serial: "number",
-    text: "string",
-    time: "string",
-    uuid: "string",
-    varchar: "string",
-    timestamp: "Date",
-    timestamptz: "Date",
-    bytea: "Uint8Array",
-    xml: "string",
+    bigserial: (c: Column) => "bigint",
+    bool: (c: Column) => "boolean",
+    date: (c: Column) => "Date",
+    float4: (c: Column) => "number",
+    float8: (c: Column) => "number",
+    int4: (c: Column) => "number",
+    int8: (c: Column) => "bigint",
+    json: (c: Column) => "any",
+    jsonb: (c: Column) => "any",
+    numeric: (c: Column) => "string",
+    serial: (c: Column) => "number",
+    text: (c: Column) => "string",
+    time: (c: Column) => "string",
+    uuid: (c: Column) => "string",
+    varchar: (c: Column) => "string",
+    timestamp: (c: Column) => "Date",
+    timestamptz: (c: Column) => "Date",
+    bytea: (c: Column) => "Uint8Array",
+    xml: (c: Column) => "string",
     // point: "Point",
     // circle: "Circle",
-};
-
-export type GenOpts = {
-    indent?: string;
-    mappingToTypescript?: typeof PGTYPE_TO_TYPESCRIPT;
-    mappingToValibot?: typeof PGTYPE_TO_TYPESCRIPT;
-    mappingToZod?: typeof PGTYPE_TO_TYPESCRIPT;
-    mappingToArktype?: typeof PGTYPE_TO_TYPESCRIPT;
-    renameEnums?: (name: string) => string;
-    renameColumns?: (name: string) => string;
-    renameTables?: (name: string) => string;
 };
 
 /**
@@ -67,12 +56,12 @@ export function generateTypescriptColumnType(
 ): string {
     const enumNames = enums.map(({ name }) => name);
     const renameEnums = options.renameEnums ?? identityf;
-    const typeMap = options.mappingToTypescript ?? PGTYPE_TO_TYPESCRIPT;
-    const columnType: keyof typeof typeMap = column.type as keyof typeof typeMap;
+    const typeMap = (options.mappingToTypescript ?? PGTYPE_TO_TYPESCRIPT) as Mapper;
+    const columnType = column.type as keyof typeof typeMap;
     let typeName = "";
 
     if (columnType in typeMap) {
-        typeName = typeMap[columnType];
+        typeName = typeMap[columnType](column);
     } else if (enumNames.includes(columnType)) {
         typeName = renameEnums(columnType);
     } else {

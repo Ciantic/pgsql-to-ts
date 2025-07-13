@@ -1,9 +1,8 @@
-import type { Column, EnumDef, SqlParseResult } from "../parser.ts";
+import type { Column, EnumDef, GenOpts, SqlParseResult } from "../parser.ts";
 import {
     generateTypescriptColumnType,
     generateTypeScriptEnums,
     PGTYPE_TO_TYPESCRIPT,
-    type GenOpts,
 } from "./typescript.ts";
 import { HEADER, identityf } from "../utils.ts";
 

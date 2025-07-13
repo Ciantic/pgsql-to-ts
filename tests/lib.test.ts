@@ -1,4 +1,9 @@
-import { generateKyselyDatabase, generateTypeScript, parseSql } from "../src/index.ts";
+import {
+    generateKyselyDatabase,
+    generateTypeScript,
+    generateValibotSchemas,
+    parseSql,
+} from "../src/index.ts";
 import { expect, describe, test } from "vitest";
 import fs from "node:fs/promises";
 
@@ -42,5 +47,15 @@ describe("library tests", () => {
             renameTables: snakeCaseToPascalCase,
         });
         await expect(result).toMatchFileSnapshot(__dirname + "/__snapshots__/output_typescript.ts");
+    });
+
+    test("Generate valibot schemas", async () => {
+        const parsed = await parseSql(await schemaSql);
+        const result = await generateValibotSchemas(parsed, {
+            renameEnums: snakeCaseToPascalCase,
+            renameColumns: snakeCaseToCamelCase,
+            renameTables: snakeCaseToPascalCase,
+        });
+        await expect(result).toMatchFileSnapshot(__dirname + "/__snapshots__/output_valibot.ts");
     });
 });
