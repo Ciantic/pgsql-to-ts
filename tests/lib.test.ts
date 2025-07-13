@@ -2,6 +2,7 @@ import {
     generateKyselyDatabase,
     generateTypeScript,
     generateValibotSchemas,
+    generateZodSchemas,
     parseSql,
 } from "../src/index.ts";
 import { expect, describe, test } from "vitest";
@@ -57,5 +58,15 @@ describe("library tests", () => {
             renameTables: snakeCaseToPascalCase,
         });
         await expect(result).toMatchFileSnapshot(__dirname + "/__snapshots__/output_valibot.ts");
+    });
+
+    test("Generate zod schemas", async () => {
+        const parsed = await parseSql(await schemaSql);
+        const result = await generateZodSchemas(parsed, {
+            renameEnums: snakeCaseToPascalCase,
+            renameColumns: snakeCaseToCamelCase,
+            renameTables: snakeCaseToPascalCase,
+        });
+        await expect(result).toMatchFileSnapshot(__dirname + "/__snapshots__/output_zod.ts");
     });
 });
