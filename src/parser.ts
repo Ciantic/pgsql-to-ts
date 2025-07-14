@@ -90,11 +90,11 @@ export type Column = {
     name: string;
     type: PgTypes | {};
     typeParams?: (string | number | boolean)[];
-    array: boolean;
-    notnull: boolean;
-    primarykey: boolean;
+    array?: boolean;
+    notnull?: boolean;
+    primarykey?: boolean;
     generatedWhen?: "always" | "by default";
-    unique: boolean;
+    unique?: boolean;
     default?: string;
     defaultSimple?: string;
     check?: string;
@@ -220,10 +220,10 @@ function constval(node: Node | undefined): string | number | boolean {
 async function parseColumn({ colname, typeName, constraints }: ColumnDef): Promise<Column> {
     const colName = colname;
     const typeNames = typeName?.names;
-    let notnull = false;
-    let primarykey = false;
-    let unique = false;
-    let array = false;
+    let notnull = undefined as boolean | undefined;
+    let primarykey = undefined as boolean | undefined;
+    let unique = undefined as boolean | undefined;
+    let array = undefined as boolean | undefined;
     let typeParams: (string | number | boolean)[] = [];
     let generatedWhen: Column["generatedWhen"] | undefined = undefined;
     let defaultSimpleValue: string | number | boolean | undefined = undefined;
