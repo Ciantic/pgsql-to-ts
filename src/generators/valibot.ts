@@ -37,7 +37,6 @@ export const v: ValibotLibrary = fakeValibot();
 const TYPES_WITH_COMPARISON_OP = ["int4", "int8", "float4", "float8", "numeric"] as PgTypes[];
 
 const comparisonOperator = (c: Column, original: any) => {
-    let { minValue, maxValue, notValue, value } = v;
     // Numeric types are strings when coming from postgres, valibot doesn't have
     // minValue/maxValue/notValue/value for decimal strings. However we can use
     // the same logic for small values by coercing the value to a number before
@@ -63,19 +62,19 @@ const comparisonOperator = (c: Column, original: any) => {
         return original;
     }
     if (c.checkSimple?.operator === ">") {
-        return v.pipe(original, minValue(c.checkSimple.min), notValue(c.checkSimple.min));
+        return v.pipe(original, v.minValue(c.checkSimple.min), v.notValue(c.checkSimple.min));
     } else if (c.checkSimple?.operator === ">=") {
-        return v.pipe(original, minValue(c.checkSimple.min));
+        return v.pipe(original, v.minValue(c.checkSimple.min));
     } else if (c.checkSimple?.operator === "<") {
-        return v.pipe(original, maxValue(c.checkSimple.max), notValue(c.checkSimple.max));
+        return v.pipe(original, v.maxValue(c.checkSimple.max), v.notValue(c.checkSimple.max));
     } else if (c.checkSimple?.operator === "<=") {
-        return v.pipe(original, maxValue(c.checkSimple.max));
+        return v.pipe(original, v.maxValue(c.checkSimple.max));
     } else if (c.checkSimple?.operator === "=") {
-        return v.pipe(original, value(c.checkSimple.value));
+        return v.pipe(original, v.value(c.checkSimple.value));
     } else if (c.checkSimple?.operator === "!=") {
-        return v.pipe(original, notValue(c.checkSimple.value));
+        return v.pipe(original, v.notValue(c.checkSimple.value));
     } else if (c.checkSimple?.operator === "BETWEEN") {
-        return v.pipe(original, minValue(c.checkSimple.min), maxValue(c.checkSimple.max));
+        return v.pipe(original, v.minValue(c.checkSimple.min), v.maxValue(c.checkSimple.max));
     }
     return original;
 };
