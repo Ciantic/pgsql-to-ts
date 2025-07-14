@@ -45,7 +45,7 @@ export const VariousTypes = v.object({
   testCheckEqual42: v.nullish(v.pipe(v.pipe(v.number(), v.integer()), v.value(42))),
   testCheckNotEqual42: v.nullish(v.pipe(v.number(), v.integer())),
   testCheckIntBetween: v.nullish(v.pipe(v.pipe(v.number(), v.integer()), v.minValue(0), v.maxValue(100))),
-  testCheckDecimalGt0: v.nullish(v.pipe(v.pipe(v.string(), v.decimal()), v.minValue(0 as any), v.notValue("0"))),
+  testCheckDecimalGt0: v.nullish(v.pipe(v.pipe(v.string(), v.decimal()), v.check(i => +i > 0))),
   testCheckFoo: v.nullish(v.pipe(v.number(), v.integer())),
   testNotNull: v.string(),
   testNotNullArray: v.array(v.string())

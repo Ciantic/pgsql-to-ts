@@ -40,17 +40,27 @@ const comparisonOperator = (c: Column, original: any) => {
     let { minValue, maxValue, notValue, value } = v;
     // Numeric types are strings when coming from postgres, valibot doesn't have
     // minValue/maxValue/notValue/value for decimal strings. However we can use
-    // the same logic as for numbers because JS can handle sloppy comparison
-    // between string like decimals and numbers.
-    //
-    // Notice: `"12.34" > 10` is true, `"12.34" > 13` is false
+    // the same logic for small values by coercing the value to a number before
+    // comparison.
     //
     // https://github.com/fabian-hiller/valibot/issues/1247
     if (c.type === "numeric") {
-        minValue = (v: any) => `v.minValue(${v} as any)` as any;
-        maxValue = (v: any) => `v.maxValue(${v} as any)` as any;
-        notValue = (v: any) => `v.notValue(${typeof v === "number" ? `"${v}"` : v})` as any;
-        value = (v: any) => `v.value(${typeof v === "number" ? `"${v}"` : v})` as any;
+        if (c.checkSimple?.operator === ">") {
+            return `v.pipe(${original}, v.check(i => +i > ${c.checkSimple.min}))`;
+        } else if (c.checkSimple?.operator === ">=") {
+            return `v.pipe(${original}, v.check(i => +i >= ${c.checkSimple.min}))`;
+        } else if (c.checkSimple?.operator === "<") {
+            return `v.pipe(${original}, v.check(i => +i < ${c.checkSimple.max}))`;
+        } else if (c.checkSimple?.operator === "<=") {
+            return `v.pipe(${original}, v.check(i => +i <= ${c.checkSimple.max}))`;
+        } else if (c.checkSimple?.operator === "BETWEEN") {
+            return `v.pipe(${original}, v.check(i => +i >= ${c.checkSimple.min} && +i <= ${c.checkSimple.max}))`;
+        } else if (c.checkSimple?.operator === "=") {
+            return `v.pipe(${original}, v.check(i => +i === ${c.checkSimple.value}))`;
+        } else if (c.checkSimple?.operator === "!=") {
+            return `v.pipe(${original}, v.check(i => +i !== ${c.checkSimple.value}))`;
+        }
+        return original;
     }
     if (c.checkSimple?.operator === ">") {
         return v.pipe(original, minValue(c.checkSimple.min), notValue(c.checkSimple.min));
