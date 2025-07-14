@@ -27,8 +27,12 @@ export type Mapper = {
     [k in PgTypes]: (c: Column) => string;
 };
 
+/**
+ * Options for code generation.
+ *
+ */
 export type GenOpts = {
-    indent?: string;
+    indent: string;
     mappingToTypescript?: Mapper;
     mappingToValibot?: Mapper;
     mappingToZod?: Mapper;
@@ -36,7 +40,17 @@ export type GenOpts = {
     renameEnums?: (name: string) => string;
     renameColumns?: (name: string) => string;
     renameTables?: (name: string) => string;
+    rowVersionColumnNames: string[];
+    updatedAtColumnNames: string[];
+    createdAtColumnNames: string[];
 };
+
+export const DEFAULT_GENOPTS = {
+    indent: "    ",
+    rowVersionColumnNames: ["concurrency_stamp", "version"],
+    updatedAtColumnNames: ["updated_at", "last_modified"],
+    createdAtColumnNames: ["created_at", "inserted_at"],
+} as const satisfies GenOpts;
 
 // https://doxygen.postgresql.org/parsenodes_8h.html#aa2da3f289480b73dbcaccf0404657c65
 export type FKCONSTR_ACTION =

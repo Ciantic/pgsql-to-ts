@@ -1,4 +1,5 @@
 import {
+    DEFAULT_GENOPTS,
     generateKyselyDatabase,
     generateTypeScript,
     generateValibotSchemas,
@@ -33,6 +34,7 @@ describe("library tests", () => {
     test("Generate kysely database", async () => {
         const parsed = await parseSql(await schemaSql);
         const result = await generateKyselyDatabase(parsed, {
+            ...DEFAULT_GENOPTS,
             renameEnums: snakeCaseToPascalCase,
             renameColumns: snakeCaseToCamelCase,
             renameTables: snakeCaseToPascalCase,
@@ -43,6 +45,7 @@ describe("library tests", () => {
     test("Generate typescript types", async () => {
         const parsed = await parseSql(await schemaSql);
         const result = await generateTypeScript(parsed, {
+            ...DEFAULT_GENOPTS,
             renameEnums: snakeCaseToPascalCase,
             renameColumns: snakeCaseToCamelCase,
             renameTables: snakeCaseToPascalCase,
@@ -53,6 +56,7 @@ describe("library tests", () => {
     test("Generate valibot schemas", async () => {
         const parsed = await parseSql(await schemaSql);
         const result = await generateValibotSchemas(parsed, {
+            ...DEFAULT_GENOPTS,
             renameEnums: snakeCaseToPascalCase,
             renameColumns: snakeCaseToCamelCase,
             renameTables: snakeCaseToPascalCase,
@@ -63,6 +67,7 @@ describe("library tests", () => {
     test("Generate zod schemas", async () => {
         const parsed = await parseSql(await schemaSql);
         const result = await generateZodSchemas(parsed, {
+            ...DEFAULT_GENOPTS,
             renameEnums: snakeCaseToPascalCase,
             renameColumns: snakeCaseToCamelCase,
             renameTables: snakeCaseToPascalCase,

@@ -1,5 +1,12 @@
 import { HEADER } from "../utils.ts";
-import type { Column, EnumDef, GenOpts, Mapper, SqlParseResult } from "../parser.ts";
+import {
+    DEFAULT_GENOPTS,
+    type Column,
+    type EnumDef,
+    type GenOpts,
+    type Mapper,
+    type SqlParseResult,
+} from "../parser.ts";
 import { identityf } from "../utils.ts";
 
 /**
@@ -35,7 +42,10 @@ export const PGTYPE_TO_TYPESCRIPT = {
  *
  * For instance, `export type MyEnum = "good" | "bad" | "ugly" | "dont know";`
  */
-export function generateTypeScriptEnums(enums: EnumDef[], options: GenOpts = {}): string {
+export function generateTypeScriptEnums(
+    enums: EnumDef[],
+    options: GenOpts = DEFAULT_GENOPTS
+): string {
     let result = "";
     const renameEnums = options.renameEnums ?? identityf;
     for (const { name, values } of enums) {
@@ -52,7 +62,7 @@ export function generateTypeScriptEnums(enums: EnumDef[], options: GenOpts = {})
  */
 export function generateTypescriptColumnType(
     { column, enums }: { column: Column; enums: EnumDef[] },
-    options: GenOpts = {}
+    options: GenOpts = DEFAULT_GENOPTS
 ): string {
     const enumNames = enums.map(({ name }) => name);
     const renameEnums = options.renameEnums ?? identityf;
@@ -86,11 +96,11 @@ export function generateTypescriptColumnType(
  */
 export function generateTypeScriptTables(
     { tables, enums }: SqlParseResult,
-    options: GenOpts = {}
+    options: GenOpts = DEFAULT_GENOPTS
 ): string {
     const renameColumns = options.renameColumns ?? identityf;
     const renameTables = options.renameTables ?? identityf;
-    const indent = options.indent ?? "    ";
+    const indent = options.indent;
     let result = "";
 
     for (const table of tables) {
@@ -120,7 +130,10 @@ export function generateTypeScriptTables(
  * }
  * ```
  */
-export function generateTypeScript(result: SqlParseResult, options: GenOpts = {}): string {
+export function generateTypeScript(
+    result: SqlParseResult,
+    options: GenOpts = DEFAULT_GENOPTS
+): string {
     const items = [...HEADER] as string[];
     items.push(generateTypeScriptEnums(result.enums, options));
     items.push(generateTypeScriptTables(result, options));

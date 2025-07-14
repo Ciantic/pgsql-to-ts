@@ -1,4 +1,10 @@
-import type { Column, EnumDef, GenOpts, SqlParseResult } from "../parser.ts";
+import {
+    DEFAULT_GENOPTS,
+    type Column,
+    type EnumDef,
+    type GenOpts,
+    type SqlParseResult,
+} from "../parser.ts";
 import {
     generateTypescriptColumnType,
     generateTypeScriptEnums,
@@ -13,7 +19,7 @@ import { HEADER, identityf } from "../utils.ts";
  */
 function generateKyselyColumnType(
     { column, enums }: { column: Column; enums: EnumDef[] },
-    options: GenOpts = {}
+    options: GenOpts = DEFAULT_GENOPTS
 ): string {
     const columnType = column.type as keyof typeof PGTYPE_TO_TYPESCRIPT;
     let typeName = generateTypescriptColumnType({ column, enums }, options);
@@ -47,8 +53,11 @@ function generateKyselyColumnType(
  * }
  * ```
  */
-export function generateKyselyDatabase(result: SqlParseResult, options: GenOpts = {}): string {
-    const indent = options.indent ?? "  ";
+export function generateKyselyDatabase(
+    result: SqlParseResult,
+    options: GenOpts = DEFAULT_GENOPTS
+): string {
+    const indent = options.indent;
     const renameColumns = options.renameColumns ?? identityf;
     const items: string[] = [...HEADER];
     items.push(`import type { ColumnType } from "kysely";\n`);

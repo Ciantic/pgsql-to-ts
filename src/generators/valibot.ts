@@ -1,4 +1,12 @@
-import type { GenOpts, Column, EnumDef, SqlParseResult, PgTypes, Mapper } from "../parser.ts";
+import {
+    type GenOpts,
+    type Column,
+    type EnumDef,
+    type SqlParseResult,
+    type PgTypes,
+    type Mapper,
+    DEFAULT_GENOPTS,
+} from "../parser.ts";
 import { HEADER, identityf } from "../utils.ts";
 import type { BaseSchema } from "valibot";
 
@@ -101,11 +109,14 @@ export const PGTYPES_TO_VALIBOT = {
     xml: (c: Column) => v.string(),
 } satisfies Record<PgTypes, (c: Column) => BaseSchema<any, any, any>>;
 
-function generateValibotEnums(enums: EnumDef[], options: GenOpts = {}): string {
+function generateValibotEnums(enums: EnumDef[], options: GenOpts = DEFAULT_GENOPTS): string {
     return enums.map((e) => generateValibotEnumType(e, options)).join("\n");
 }
 
-function generateValibotEnumType({ name, values }: EnumDef, options: GenOpts = {}): string {
+function generateValibotEnumType(
+    { name, values }: EnumDef,
+    options: GenOpts = DEFAULT_GENOPTS
+): string {
     const renameEnums = options.renameEnums ?? identityf;
     const formattedValues = values.map((v) => `"${v}"`).join(", ");
     return `export const ${renameEnums(name)} = v.picklist([${formattedValues}]);`;
@@ -113,7 +124,7 @@ function generateValibotEnumType({ name, values }: EnumDef, options: GenOpts = {
 
 function generateValibotColumnSchema(
     { column, enums }: { column: Column; enums: EnumDef[] },
-    options: GenOpts = {}
+    options: GenOpts = DEFAULT_GENOPTS
 ) {
     const renameEnums = options.renameEnums ?? identityf;
     const v = fakeValibot();
@@ -145,9 +156,9 @@ function generateValibotColumnSchema(
 
 function generateValibotTableSchemas(
     { tables, enums }: SqlParseResult,
-    options: GenOpts = {}
+    options: GenOpts = DEFAULT_GENOPTS
 ): string {
-    const indent = options.indent ?? "  ";
+    const indent = options.indent;
     const renameTables = options.renameTables ?? identityf;
     const renameColumns = options.renameColumns ?? identityf;
     const items: string[] = [];
@@ -170,7 +181,10 @@ function generateValibotTableSchemas(
     return items.join("\n");
 }
 
-export function generateValibotSchemas(result: SqlParseResult, options: GenOpts = {}): string {
+export function generateValibotSchemas(
+    result: SqlParseResult,
+    options: GenOpts = DEFAULT_GENOPTS
+): string {
     const items = [...HEADER] as string[];
     items.push(`import * as v from "valibot";`);
     items.push(``);
