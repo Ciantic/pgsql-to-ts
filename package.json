@@ -12,6 +12,7 @@
         "@electric-sql/pglite": "^0.3.4",
         "@pgsql/types": "^17.6.1",
         "@types/node": "24.0.13",
+        "@vitest/coverage-v8": "^3.2.4",
         "arktype": "^2.1.20",
         "esbuild": "^0.25.6",
         "kysely": "^0.28.2",
@@ -31,6 +32,7 @@
         "test": "vitest",
         "test-once": "vitest run",
         "test-no-typecheck": "vitest --typecheck.enabled false",
+        "test-coverage": "vitest run --coverage",
         "build": "rimraf dist && ts-node build.ts && tsc",
         "cli": "ts-node --esm ./src/cli.ts"
     }

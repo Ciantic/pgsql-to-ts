@@ -7,5 +7,9 @@ export default defineConfig({
             tsconfig: "./tsconfig.tests.json",
             include: ["src/**/*.ts", "tests/**/*.ts"],
         },
+        coverage: {
+            include: ["src/**/*.ts", "tests/**/*.ts"],
+            reporter: ["text", "json"],
+        },
     },
 });

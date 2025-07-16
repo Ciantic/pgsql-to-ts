@@ -10,7 +10,7 @@ export type InferObjectFieldsWithMetadata<T extends v.ObjectSchema<any, any>> = 
         ? K
         : never]: v.InferMetadata<T["entries"][K]>;
 };
-
+/*
 const TestInferringSchema = v.object({
     fieldWithoutMetadata: v.pipe(v.number(), v.integer()),
 
@@ -26,3 +26,4 @@ const foo = {
         name: "bar",
     },
 } as const satisfies InferObjectFieldsWithMetadata<typeof TestInferringSchema>;
+*/
