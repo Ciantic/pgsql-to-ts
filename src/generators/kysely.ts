@@ -10,7 +10,7 @@ import {
     generateTypeScriptEnums,
     PGTYPE_TO_TYPESCRIPT,
 } from "./typescript.ts";
-import { HEADER, identityf } from "../utils.ts";
+import { HEADER } from "../utils.ts";
 
 /**
  * Generate Kysely column type for a given column.
@@ -55,21 +55,20 @@ function generateKyselyColumnType(
  */
 export function generateKyselyDatabase(
     result: SqlParseResult,
-    options: GenOpts = DEFAULT_GENOPTS
+    opts: GenOpts = DEFAULT_GENOPTS
 ): string {
-    const indent = options.indent;
-    const renameColumns = options.renameColumns ?? identityf;
+    const indent = opts.indent;
     const items: string[] = [...HEADER];
     items.push(`import type { ColumnType } from "kysely";\n`);
-    items.push(generateTypeScriptEnums(result.enums, options));
+    items.push(generateTypeScriptEnums(result.enums, opts));
     items.push(`export type Database = {`);
 
     for (const table of result.tables) {
         // ret += `${indent}${table.name}: ${renameTables(table.name)},\n`;
         items.push(`${indent}${table.name}: {`);
         for (const column of table.columns) {
-            const typeName = generateKyselyColumnType({ column, enums: result.enums }, options);
-            items.push(`${indent}${indent}${renameColumns(column.name)}: ${typeName};`);
+            const typeName = generateKyselyColumnType({ column, enums: result.enums }, opts);
+            items.push(`${indent}${indent}${opts.renameColumns(column.name)}: ${typeName};`);
         }
         items.push(`${indent}},`);
     }

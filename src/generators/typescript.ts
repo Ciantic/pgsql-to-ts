@@ -7,7 +7,6 @@ import {
     type Mapper,
     type SqlParseResult,
 } from "../parser.ts";
-import { identityf } from "../utils.ts";
 
 /**
  * This typemap is dependent on PostgreSQL driver (e.g. node-postgres or PgLite)
@@ -42,15 +41,11 @@ export const PGTYPE_TO_TYPESCRIPT = {
  *
  * For instance, `export type MyEnum = "good" | "bad" | "ugly" | "dont know";`
  */
-export function generateTypeScriptEnums(
-    enums: EnumDef[],
-    options: GenOpts = DEFAULT_GENOPTS
-): string {
+export function generateTypeScriptEnums(enums: EnumDef[], opts: GenOpts = DEFAULT_GENOPTS): string {
     let result = "";
-    const renameEnums = options.renameEnums ?? identityf;
     for (const { name, values } of enums) {
         const formattedValues = values.map((v) => `"${v}"`).join(" | ");
-        result += `export type ${renameEnums(name)} = ${formattedValues};\n`;
+        result += `export type ${opts.renameEnums(name)} = ${formattedValues};\n`;
     }
     return result;
 }
@@ -62,18 +57,17 @@ export function generateTypeScriptEnums(
  */
 export function generateTypescriptColumnType(
     { column, enums }: { column: Column; enums: EnumDef[] },
-    options: GenOpts = DEFAULT_GENOPTS
+    opts: GenOpts = DEFAULT_GENOPTS
 ): string {
     const enumNames = enums.map(({ name }) => name);
-    const renameEnums = options.renameEnums ?? identityf;
-    const typeMap = (options.mappingToTypescript ?? PGTYPE_TO_TYPESCRIPT) as Mapper;
+    const typeMap = (opts.mappingToTypescript ?? PGTYPE_TO_TYPESCRIPT) as Mapper;
     const columnType = column.type as keyof typeof typeMap;
     let typeName = "";
 
     if (columnType in typeMap) {
         typeName = typeMap[columnType](column);
     } else if (enumNames.includes(columnType)) {
-        typeName = renameEnums(columnType);
+        typeName = opts.renameEnums(columnType);
     } else {
         throw new Error(`Unknown type: ${column.type}`);
     }
@@ -96,18 +90,16 @@ export function generateTypescriptColumnType(
  */
 export function generateTypeScriptTables(
     { tables, enums }: SqlParseResult,
-    options: GenOpts = DEFAULT_GENOPTS
+    opts: GenOpts = DEFAULT_GENOPTS
 ): string {
-    const renameColumns = options.renameColumns ?? identityf;
-    const renameTables = options.renameTables ?? identityf;
-    const indent = options.indent;
+    const indent = opts.indent;
     let result = "";
 
     for (const table of tables) {
-        result += `export interface ${renameTables(table.name)} {\n`;
+        result += `export interface ${opts.renameTables(table.name)} {\n`;
         for (const column of table.columns) {
-            const typeName = generateTypescriptColumnType({ column, enums }, options);
-            result += `${indent}${renameColumns(column.name)}: ${typeName};\n`;
+            const typeName = generateTypescriptColumnType({ column, enums }, opts);
+            result += `${indent}${opts.renameColumns(column.name)}: ${typeName};\n`;
         }
         result += "}\n\n";
     }

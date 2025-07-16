@@ -8,7 +8,7 @@ import {
     type Mapper,
     DEFAULT_GENOPTS,
 } from "../parser.ts";
-import { HEADER, identityf } from "../utils.ts";
+import { HEADER } from "../utils.ts";
 
 type ZodLibrary = typeof import("zod");
 
@@ -126,29 +126,24 @@ function generateZodEnums(enums: EnumDef[], options: GenOpts = DEFAULT_GENOPTS):
     return enums.map((e) => generateZodEnumType(e, options)).join("\n");
 }
 
-function generateZodEnumType(
-    { name, values }: EnumDef,
-    options: GenOpts = DEFAULT_GENOPTS
-): string {
-    const renameEnums = options.renameEnums ?? identityf;
+function generateZodEnumType({ name, values }: EnumDef, opts: GenOpts = DEFAULT_GENOPTS): string {
     const formattedValues = values.map((v) => `"${v}"`).join(", ");
-    return `export const ${renameEnums(name)} = z.enum([${formattedValues}]);`;
+    return `export const ${opts.renameEnums(name)} = z.enum([${formattedValues}]);`;
 }
 
 function generateZodColumnSchema(
     { column, enums }: { column: Column; enums: EnumDef[] },
-    options: GenOpts = DEFAULT_GENOPTS
+    opts: GenOpts = DEFAULT_GENOPTS
 ) {
-    const renameEnums = options.renameEnums ?? identityf;
     const z = fakeZod();
-    const typeMap = (options.mappingToZod ?? (PGTYPES_TO_ZOD as any)) as Mapper;
+    const typeMap = (opts.mappingToZod ?? (PGTYPES_TO_ZOD as any)) as Mapper;
     const columnType = column.type as PgTypes;
     let typeFunc = "";
 
     if (columnType in typeMap) {
         typeFunc = typeMap[columnType](column);
     } else if (enums.map((e) => e.name).includes(columnType)) {
-        typeFunc = renameEnums(columnType);
+        typeFunc = opts.renameEnums(columnType);
     } else {
         throw new Error(`Unknown column type: ${columnType}`);
     }
@@ -174,20 +169,18 @@ function generateZodColumnSchema(
 
 function generateZodTableSchemas(
     { tables, enums }: SqlParseResult,
-    options: GenOpts = DEFAULT_GENOPTS
+    opts: GenOpts = DEFAULT_GENOPTS
 ): string {
-    const indent = options.indent;
-    const renameTables = options.renameTables ?? identityf;
-    const renameColumns = options.renameColumns ?? identityf;
+    const indent = opts.indent;
     const items: string[] = [];
 
     for (const table of tables) {
-        const tableName = renameTables(table.name);
+        const tableName = opts.renameTables(table.name);
         const columns: string[] = [];
 
         for (const column of table.columns) {
-            const columnName = renameColumns(column.name);
-            const type = generateZodColumnSchema({ column, enums }, options);
+            const columnName = opts.renameColumns(column.name);
+            const type = generateZodColumnSchema({ column, enums }, opts);
             columns.push(`${indent}${columnName}: ${type}`);
         }
 

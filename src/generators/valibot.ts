@@ -6,8 +6,10 @@ import {
     type PgTypes,
     type Mapper,
     DEFAULT_GENOPTS,
+    SCHEMA_KINDS,
+    type SchemaKind,
 } from "../parser.ts";
-import { HEADER, identityf } from "../utils.ts";
+import { HEADER } from "../utils.ts";
 import type { BaseSchema } from "valibot";
 
 type ValibotLibrary = typeof import("valibot");
@@ -109,33 +111,31 @@ export const PGTYPES_TO_VALIBOT = {
     xml: (c: Column) => v.string(),
 } satisfies Record<PgTypes, (c: Column) => BaseSchema<any, any, any>>;
 
-function generateValibotEnums(enums: EnumDef[], options: GenOpts = DEFAULT_GENOPTS): string {
-    return enums.map((e) => generateValibotEnumType(e, options)).join("\n");
+function generateValibotEnums(enums: EnumDef[], opts: GenOpts = DEFAULT_GENOPTS): string {
+    return enums.map((e) => generateValibotEnumType(e, opts)).join("\n");
 }
 
 function generateValibotEnumType(
     { name, values }: EnumDef,
-    options: GenOpts = DEFAULT_GENOPTS
+    opts: GenOpts = DEFAULT_GENOPTS
 ): string {
-    const renameEnums = options.renameEnums ?? identityf;
     const formattedValues = values.map((v) => `"${v}"`).join(", ");
-    return `export const ${renameEnums(name)} = v.picklist([${formattedValues}]);`;
+    return `export const ${opts.renameEnums(name)} = v.picklist([${formattedValues}]);`;
 }
 
 function generateValibotColumnSchema(
-    { column, enums }: { column: Column; enums: EnumDef[] },
-    options: GenOpts = DEFAULT_GENOPTS
+    { column, enums, kind }: { column: Column; enums: EnumDef[]; kind: SchemaKind },
+    opts: GenOpts = DEFAULT_GENOPTS
 ) {
-    const renameEnums = options.renameEnums ?? identityf;
     const v = fakeValibot();
-    const typeMap = (options.mappingToValibot ?? (PGTYPES_TO_VALIBOT as any)) as Mapper;
+    const typeMap = (opts.mappingToValibot ?? (PGTYPES_TO_VALIBOT as any)) as Mapper;
     const columnType = column.type as PgTypes;
-    let typeFunc = "";
+    let typeFunc: any = "";
 
     if (columnType in typeMap) {
         typeFunc = typeMap[columnType](column);
     } else if (enums.map((e) => e.name).includes(columnType)) {
-        typeFunc = renameEnums(columnType);
+        typeFunc = opts.renameEnums(columnType);
     } else {
         throw new Error(`Unknown column type: ${columnType}`);
     }
@@ -143,39 +143,46 @@ function generateValibotColumnSchema(
         typeFunc = comparisonOperator(column, typeFunc);
     }
     if (column.array) {
-        typeFunc = v.array(typeFunc as any) as any;
+        typeFunc = v.array(typeFunc);
     }
 
-    if (typeof column.defaultSimple !== "undefined") {
-        typeFunc = v.nullish(typeFunc as any, JSON.stringify(column.defaultSimple)) as any;
-    } else if (!column.notnull) {
-        typeFunc = v.nullish(typeFunc as any) as any;
+    if (kind === "select") {
+        if (!column.notnull) {
+            typeFunc = v.nullable(typeFunc);
+        }
+    } else if (kind === "insert" || kind === "update") {
+        if (!column.notnull) {
+            typeFunc = v.nullable(typeFunc);
+        }
+        if (typeof column.default !== "undefined") {
+            if (typeof column.defaultSimple !== "undefined") {
+                typeFunc = v.optional(typeFunc, JSON.stringify(column.defaultSimple));
+            } else {
+                typeFunc = v.optional(typeFunc);
+            }
+        } else {
+            typeFunc = v.optional(typeFunc);
+        }
     }
     return typeFunc;
 }
 
 function generateValibotTableSchemas(
     { tables, enums }: SqlParseResult,
-    options: GenOpts = DEFAULT_GENOPTS
+    opts: GenOpts = DEFAULT_GENOPTS
 ): string {
-    const indent = options.indent;
-    const renameTables = options.renameTables ?? identityf;
-    const renameColumns = options.renameColumns ?? identityf;
     const items: string[] = [];
     for (const table of tables) {
-        const tableName = renameTables(table.name);
-        const columns: string[] = [];
-
-        for (const column of table.columns) {
-            const columnName = renameColumns(column.name);
-            const type = generateValibotColumnSchema({ column, enums }, options);
-            columns.push(`${indent}${columnName}: ${type}`);
+        for (const kind of SCHEMA_KINDS) {
+            items.push(`export const ${opts.renameSchemas(table.name, kind)} = v.object({`);
+            for (const column of table.columns) {
+                const columnName = opts.renameColumns(column.name);
+                const type = generateValibotColumnSchema({ column, enums, kind }, opts);
+                items.push(`${opts.indent}${columnName}: ${type},`);
+            }
+            items.push(`});`);
+            items.push(``);
         }
-
-        items.push(`export const ${tableName} = v.object({`);
-        items.push(columns.join(",\n"));
-        items.push(`});`);
-        items.push(``);
     }
 
     return items.join("\n");
@@ -183,15 +190,15 @@ function generateValibotTableSchemas(
 
 export function generateValibotSchemas(
     result: SqlParseResult,
-    options: GenOpts = DEFAULT_GENOPTS
+    opts: GenOpts = DEFAULT_GENOPTS
 ): string {
     const items = [...HEADER] as string[];
     items.push(`import * as v from "valibot";`);
     items.push(``);
-    items.push(generateValibotEnums(result.enums, options));
+    items.push(generateValibotEnums(result.enums, opts));
     if (result.enums.length > 0) {
         items.push(``);
     }
-    items.push(generateValibotTableSchemas(result, options));
+    items.push(generateValibotTableSchemas(result, opts));
     return items.join("\n");
 }

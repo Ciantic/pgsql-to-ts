@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "noEmit": true,
+        "emitDeclarationOnly": false,
+        "rootDir": "tests"
+    },
+    "include": ["tests/**/*.ts"],
+    "exclude": ["node_modules", "dist", "src"]
+}

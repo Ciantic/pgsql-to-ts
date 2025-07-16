@@ -1,6 +1,6 @@
 import { deparse, parse } from "pgsql-parser";
 import type { ColumnDef, CreateEnumStmt, CreateStmt, Node, ParseResult } from "@pgsql/types";
-import { omitUndefined } from "./utils.ts";
+import { identityf, omitUndefined } from "./utils.ts";
 
 export type PgTypes =
     | "bigserial"
@@ -27,6 +27,10 @@ export type Mapper = {
     [k in PgTypes]: (c: Column) => string;
 };
 
+export const SCHEMA_KINDS = ["select", "insert", "update", "update_key"] as const;
+
+export type SchemaKind = (typeof SCHEMA_KINDS)[number];
+
 /**
  * Options for code generation.
  *
@@ -37,9 +41,10 @@ export type GenOpts = {
     mappingToValibot?: Mapper;
     mappingToZod?: Mapper;
     mappingToArktype?: Mapper;
-    renameEnums?: (name: string) => string;
-    renameColumns?: (name: string) => string;
-    renameTables?: (name: string) => string;
+    renameEnums: (name: string) => string;
+    renameColumns: (name: string) => string;
+    renameTables: (name: string) => string;
+    renameSchemas: (name: string, kind: SchemaKind) => string;
     rowVersionColumnNames: string[];
     updatedAtColumnNames: string[];
     createdAtColumnNames: string[];
@@ -50,6 +55,12 @@ export const DEFAULT_GENOPTS = {
     rowVersionColumnNames: ["concurrency_stamp", "version"],
     updatedAtColumnNames: ["updated_at", "last_modified"],
     createdAtColumnNames: ["created_at", "inserted_at"],
+    renameEnums: identityf,
+    renameColumns: identityf,
+    renameTables: identityf,
+    renameSchemas(name: string, kind: SchemaKind) {
+        return this?.renameTables?.(name + "_" + kind) ?? name + "_" + kind;
+    },
 } as const satisfies GenOpts;
 
 // https://doxygen.postgresql.org/parsenodes_8h.html#aa2da3f289480b73dbcaccf0404657c65

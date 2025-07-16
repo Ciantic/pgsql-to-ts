@@ -28,7 +28,7 @@
         "pgsql-parser": "^17.7.8"
     },
     "scripts": {
-        "test": "vitest",
+        "test": "vitest --typecheck",
         "build": "rimraf dist && ts-node build.ts && tsc",
         "cli": "ts-node --esm ./src/cli.ts"
     }
