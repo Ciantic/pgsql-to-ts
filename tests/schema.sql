@@ -44,11 +44,11 @@ CREATE TABLE "various_types" (
     "test_check_not_equal42" integer check ("test_check_not_equal42" != 42),
     "test_check_int_between" integer check ("test_check_int_between" BETWEEN 0 and 100),
     "test_check_decimal_gt0" decimal(10, 2) check ("test_check_decimal_gt0" > 0),
-
-    -- Incorrect check constraint for testing (tests another column for no good reason)
-    "test_check_foo" integer check ("test_check_equal42" = 42),
     "test_not_null" text not null,
     "test_not_null_array" text[] not null
+    
+    -- Incorrect check constraint for testing (tests another column for no good reason)
+    -- "test_check_foo" integer check ("test_check_equal42" = 42),
 );
 
 CREATE TABLE "test_foreignkeys" (

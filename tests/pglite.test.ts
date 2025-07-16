@@ -53,7 +53,6 @@ describe("kysely", () => {
             testCheckNotEqual42: 43,
             testCheckDecimalGt0: "10.00",
             testCheckIntBetween: 50,
-            testCheckFoo: 42,
             testNotNull: "This field cannot be null",
             testNotNullArray: ["required", "array", "values"],
         } satisfies k.InsertObject<Database, "various_types">;

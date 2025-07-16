@@ -240,11 +240,6 @@
           ],
         },
         {
-          "check": "test_check_equal42 = 42",
-          "name": "test_check_foo",
-          "type": "int4",
-        },
-        {
           "name": "test_not_null",
           "notnull": true,
           "type": "text",

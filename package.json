@@ -29,6 +29,7 @@
     },
     "scripts": {
         "test": "vitest",
+        "test-once": "vitest run",
         "test-no-typecheck": "vitest --typecheck.enabled false",
         "build": "rimraf dist && ts-node build.ts && tsc",
         "cli": "ts-node --esm ./src/cli.ts"

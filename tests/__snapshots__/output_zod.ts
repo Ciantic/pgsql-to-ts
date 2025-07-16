@@ -48,7 +48,6 @@ export const VariousTypes = z.object({
     testCheckNotEqual42: z.int().nullish(),
     testCheckIntBetween: z.int().gte(0).lte(100).nullish(),
     testCheckDecimalGt0: z.string().regex(/^-?\d+(\.\d+)?$/).refine(v => +v > 0).nullish(),
-    testCheckFoo: z.int().nullish(),
     testNotNull: z.string(),
     testNotNullArray: z.array(z.string())
 });

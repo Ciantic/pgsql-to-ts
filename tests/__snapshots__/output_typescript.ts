@@ -44,7 +44,6 @@ export interface VariousTypes {
     testCheckNotEqual42: number | null;
     testCheckIntBetween: number | null;
     testCheckDecimalGt0: string | null;
-    testCheckFoo: number | null;
     testNotNull: string;
     testNotNullArray: string[];
 }

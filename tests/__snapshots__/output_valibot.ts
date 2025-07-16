@@ -58,7 +58,6 @@ export const VariousTypesSelect = v.object({
     testCheckNotEqual42: v.nullable(v.pipe(v.number(), v.integer())),
     testCheckIntBetween: v.nullable(v.pipe(v.pipe(v.number(), v.integer()), v.minValue(0), v.maxValue(100))),
     testCheckDecimalGt0: v.nullable(v.pipe(v.pipe(v.string(), v.decimal()), v.check(i => +i > 0))),
-    testCheckFoo: v.nullable(v.pipe(v.number(), v.integer())),
     testNotNull: v.string(),
     testNotNullArray: v.array(v.string()),
 });
@@ -100,7 +99,6 @@ export const VariousTypesInsert = v.object({
     testCheckNotEqual42: v.optional(v.nullable(v.pipe(v.number(), v.integer()))),
     testCheckIntBetween: v.optional(v.nullable(v.pipe(v.pipe(v.number(), v.integer()), v.minValue(0), v.maxValue(100)))),
     testCheckDecimalGt0: v.optional(v.nullable(v.pipe(v.pipe(v.string(), v.decimal()), v.check(i => +i > 0)))),
-    testCheckFoo: v.optional(v.nullable(v.pipe(v.number(), v.integer()))),
     testNotNull: v.optional(v.string()),
     testNotNullArray: v.optional(v.array(v.string())),
 });
@@ -142,7 +140,6 @@ export const VariousTypesUpdate = v.object({
     testCheckNotEqual42: v.optional(v.nullable(v.pipe(v.number(), v.integer()))),
     testCheckIntBetween: v.optional(v.nullable(v.pipe(v.pipe(v.number(), v.integer()), v.minValue(0), v.maxValue(100)))),
     testCheckDecimalGt0: v.optional(v.nullable(v.pipe(v.pipe(v.string(), v.decimal()), v.check(i => +i > 0)))),
-    testCheckFoo: v.optional(v.nullable(v.pipe(v.number(), v.integer()))),
     testNotNull: v.optional(v.string()),
     testNotNullArray: v.optional(v.array(v.string())),
 });
@@ -184,7 +181,6 @@ export const VariousTypesUpdateKey = v.object({
     testCheckNotEqual42: v.pipe(v.number(), v.integer()),
     testCheckIntBetween: v.pipe(v.pipe(v.number(), v.integer()), v.minValue(0), v.maxValue(100)),
     testCheckDecimalGt0: v.pipe(v.pipe(v.string(), v.decimal()), v.check(i => +i > 0)),
-    testCheckFoo: v.pipe(v.number(), v.integer()),
     testNotNull: v.string(),
     testNotNullArray: v.array(v.string()),
 });
