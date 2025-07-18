@@ -131,3 +131,62 @@ export function generateTypeScript(
     items.push(generateTypeScriptTables(result, options));
     return items.join("\n");
 }
+
+// export type SqlParseToObject<T extends SqlParseResult> = {
+//     tables: { [key in T["tables"][number]["name"]]: T["tables"][number] };
+//     enums: { [key in T["enums"][number]["name"]]: T["enums"][number] };
+// };
+
+// export function convertParseToObject<T extends SqlParseResult>(parsed: T): SqlParseToObject<T> {
+//     const tables = parsed.tables.reduce((acc, table) => {
+//         acc[table.name] = table;
+//         return acc;
+//     }, {} as { [key: string]: (typeof parsed.tables)[number] });
+
+//     const enums = parsed.enums.reduce((acc, enumDef) => {
+//         acc[enumDef.name] = enumDef;
+//         return acc;
+//     }, {} as { [key: string]: (typeof parsed.enums)[number] });
+
+//     return { tables, enums } as SqlParseToObject<T>;
+// }
+
+export function generateTypeScriptJson(
+    result: SqlParseResult,
+    options: GenOpts = DEFAULT_GENOPTS
+): string {
+    const items = [...HEADER] as string[];
+    const json = {
+        tables: {} as any,
+        enums: {} as any,
+    };
+
+    for (const [i, table] of result.tables.entries()) {
+        json.tables[table.name] = {
+            index: i,
+            rename: options.renameTables(table.name),
+            name: table.name,
+            columns: table.columns.reduce((acc, column, i) => {
+                acc[column.name] = {
+                    index: i,
+                    rename: options.renameColumns(column.name),
+                    ...column,
+                };
+                return acc;
+            }, {} as any),
+        };
+    }
+
+    for (const [i, enumDef] of result.enums.entries()) {
+        json.enums[enumDef.name] = {
+            index: i,
+            rename: options.renameEnums(enumDef.name),
+            name: enumDef.name,
+            values: enumDef.values,
+        };
+    }
+
+    items.push(`export const schema = ${JSON.stringify(json, null, 2)} as const;`);
+
+    return items.join("\n");
+}

@@ -337,8 +337,8 @@ async function parseColumn({ colname, typeName, constraints }: ColumnDef): Promi
 
     return omitUndefined({
         name: colName,
-        typeParams: typeParams.length > 0 ? typeParams : undefined,
         type,
+        typeParams: typeParams.length > 0 ? typeParams : undefined,
         array,
         notnull,
         generatedWhen,

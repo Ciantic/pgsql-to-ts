@@ -4,6 +4,7 @@ import {
     generateTypeScript,
     generateValibotSchemas,
     generateZodSchemas,
+    generateTypeScriptJson,
     parseSql,
 } from "../src/index.ts";
 import { expect, describe, test } from "vitest";
@@ -28,7 +29,14 @@ function snakeCaseToPascalCase(str: string): string {
 describe("library tests", () => {
     test("parseSql parses the Create table statements", async () => {
         const result = await parseSql(await schemaSql);
-        await expect(result).toMatchFileSnapshot(__dirname + "/__snapshots__/output_parsed.jsonc");
+        await expect(
+            generateTypeScriptJson(result, {
+                ...DEFAULT_GENOPTS,
+                renameEnums: snakeCaseToPascalCase,
+                renameColumns: snakeCaseToCamelCase,
+                renameTables: snakeCaseToPascalCase,
+            })
+        ).toMatchFileSnapshot(__dirname + "/__snapshots__/output_parsed.ts");
     });
 
     test("Generate kysely database", async () => {
